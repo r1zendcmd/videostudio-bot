@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VideoStudio Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0B1422;
+      --card-bg: #141F32;
+      --card-border: #1E2E48;
+      --accent-amber: #EDBF74;
+      --accent-cyan: #56CCF2;
+      --accent-danger: #D95D4E;
+      --accent-green: #2ECC71;
+      --text-main: #F5F0E6;
+      --text-muted: #8E9BAE;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      padding-bottom: 90px;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+      padding: 20px 16px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 20, 34, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #EDBF74, #D95D4E);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--accent-amber);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-live {
+      background: rgba(46, 204, 113, 0.15);
+      color: var(--accent-green);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .badge-live::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent-green);
+    }
+
+    /* CONTAINER & TABS */
+    .container {
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CARD STYLES */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+    }
+
+    .card-title span {
+      font-size: 18px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.1s ease, filter 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+      filter: brightness(0.9);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #EDBF74, #E2A440);
+      color: #0B1422;
+      box-shadow: 0 4px 14px rgba(237, 191, 116, 0.35);
+    }
+
+    .btn-secondary {
+      background: #1C2B44;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      margin-top: 10px;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #D95D4E, #B93C2F);
+      color: white;
+    }
+
+    /* INPUTS & CHIPS */
+    .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .input-box {
+      width: 100%;
+      background: #0D1626;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      resize: vertical;
+      min-height: 85px;
+      margin-bottom: 14px;
+      font-family: inherit;
+    }
+
+    .input-box:focus {
+      border-color: var(--accent-amber);
+    }
+
+    .chips-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .chip {
+      padding: 8px 14px;
+      background: #0E1829;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chip.active {
+      background: rgba(237, 191, 116, 0.15);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    /* HUD PREVIEW BOX */
+    .hud-box {
+      background: #080D16;
+      border: 1px solid #1A263B;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 12px;
+      color: var(--accent-amber);
+      margin: 10px 0;
+      letter-spacing: 0.05em;
+    }
+
+    .quote-box {
+      border-left: 3px solid var(--accent-amber);
+      padding: 8px 12px;
+      background: rgba(237, 191, 116, 0.06);
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+      margin: 10px 0;
+      line-height: 1.4;
+    }
+
+    .danger-box {
+      border-left: 3px solid var(--accent-danger);
+      padding: 8px 12px;
+      background: rgba(217, 93, 78, 0.08);
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+      color: #FFA59B;
+      margin: 10px 0;
+    }
+
+    /* OUTLIER CARD */
+    .outlier-item {
+      background: #0F1A2C;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .outlier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .outlier-ratio {
+      background: rgba(237, 191, 116, 0.2);
+      color: var(--accent-amber);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .outlier-stats {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* BOTTOM NAV BAR */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: rgba(11, 20, 34, 0.95);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      padding: 0 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s;
+      flex: 1;
+      padding: 6px 0;
+    }
+
+    .nav-item.active {
+      color: var(--accent-amber);
+      font-weight: 700;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 85px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: #2ECC71;
+      color: #0B1422;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      opacity: 0;
+      transition: all 0.25s ease;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-logo">VS</div>
+      <div>
+        <div class="brand-title">VideoStudio AI</div>
+        <div class="brand-subtitle">Мультфильмы & Скаут</div>
+      </div>
+    </div>
+    <div class="badge-live">ONLINE 24/7</div>
+  </div>
+
+  <div class="container">
+
+    <!-- TAB 1: СЮЖЕТЫ И МУЛЬТИКИ -->
+    <div id="tab-stories" class="tab-content active">
+      <div class="card">
+        <div class="card-title"><span>🎲</span> Генератор вирусного сюжета</div>
+        
+        <span class="label">Тематика</span>
+        <div class="chips-group" id="theme-chips">
+          <div class="chip active" data-val="what_if">Что если?..</div>
+          <div class="chip" data-val="cameras">ГородОко (Камеры)</div>
+          <div class="chip" data-val="survival">Блэкаут / Холод</div>
+          <div class="chip" data-val="anomalies">Лифт на -5 этаж</div>
+        </div>
+
+        <span class="label">Главный герой</span>
+        <div class="chips-group" id="char-chips">
+          <div class="chip active" data-val="max">Макс (студент)</div>
+          <div class="chip" data-val="hoodie">Парень в синем худи</div>
+          <div class="chip" data-val="grandma">Бабушка Валя</div>
+          <div class="chip" data-val="courier">Ночной курьер</div>
+        </div>
+
+        <span class="label">Длина ролика</span>
+        <div class="chips-group" id="length-chips">
+          <div class="chip" data-val="45">45 сек</div>
+          <div class="chip active" data-val="60">60 сек (Shorts)</div>
+          <div class="chip" data-val="75">75 сек</div>
+        </div>
+
+        <button class="btn btn-primary" onclick="generateStory()">
+          ⚡ Сгенерировать сюжет
+        </button>
+      </div>
+
+      <!-- РЕЗУЛЬТАТ СЮЖЕТА -->
+      <div id="story-result-card" class="card" style="display: none;">
+        <div class="card-title" id="res-title">Заголовок сюжета</div>
+        
+        <span class="label">Хук первых 3 секунд</span>
+        <div class="quote-box" id="res-hook">«...»</div>
+
+        <span class="label">HUD интерфейс сверху кадра</span>
+        <div class="hud-box" id="res-hud">ВРЕМЯ: 00:00 | РИСК: 10%</div>
+
+        <span class="label">Ключевые сцены (таймлайн)</span>
+        <div id="res-steps" style="font-size: 13px; line-height: 1.6; margin: 8px 0; color: #D1D8E0;"></div>
+
+        <span class="label">Клиффхэнгер (крючок на серию 2)</span>
+        <div class="danger-box" id="res-cliffhanger">...</div>
+
+        <button class="btn btn-secondary" onclick="generateEpisode2()">
+          🎬 Сгенерировать Серию 2
+        </button>
+        <button class="btn btn-secondary" onclick="generateCodePrompts()">
+          🎨 Кодовые промпты (GSAP/HTML)
+        </button>
+        <button class="btn btn-primary" style="margin-top: 10px;" onclick="sendDataToTelegram()">
+          📤 Отправить сценарий в чат
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: УЛУЧШАТОР И АНТИПЛАГИАТ -->
+    <div id="tab-enhance" class="tab-content">
+      <div class="card">
+        <div class="card-title"><span>🚀</span> Улучшатор & 100% Антиплагиат</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Вставьте любую идею или чужое видео. Бот переформулирует сюжет, удвоит ставки и завернёт в формат кодового мультика.
+        </p>
+
+        <textarea class="input-box" id="enhance-input" placeholder="Например: Что если все банкоматы выдают чужие деньги..."></textarea>
+
+        <button class="btn btn-primary" onclick="enhanceIdeaAction()">
+          🔥 Усилить идею и убрать плагиат
+        </button>
+      </div>
+
+      <!-- РЕЗУЛЬТАТ УЛУЧШЕНИЯ -->
+      <div id="enhance-result-card" class="card" style="display: none;">
+        <div class="card-title" style="color: var(--accent-amber);">✨ Готовый уникальный концепт</div>
+
+        <span class="label">Новое вирусное название</span>
+        <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px;" id="enh-title">...</div>
+
+        <span class="label">Ударный хук (0–3 сек)</span>
+        <div class="quote-box" id="enh-hook">...</div>
+
+        <span class="label">Удвоение ставок</span>
+        <div style="font-size: 13px; margin: 8px 0; color: #D1D8E0;" id="enh-stakes">...</div>
+
+        <span class="label">HUD интерфейс</span>
+        <div class="hud-box" id="enh-hud">...</div>
+
+        <span class="label">Финальный поворот</span>
+        <div class="danger-box" id="enh-cliff">...</div>
+
+        <button class="btn btn-primary" onclick="copyResult()">
+          📋 Скопировать готовый сценарий
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 3: СКАУТ АНОМАЛИЙ -->
+    <div id="tab-outliers" class="tab-content">
+      <div class="card">
+        <div class="card-title"><span>🎯</span> Радар вирусных аномалий дня</div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+          Видео с каналов с малой аудиторией, которые набрали от 500k до 1M+ просмотров (выстрелила сама идея!).
+        </p>
+
+        <!-- Аномалия 1 -->
+        <div class="outlier-item">
+          <div class="outlier-header">
+            <div style="font-size: 14px; font-weight: bold;">Что если исчезнут деньги в банкоматах?</div>
+            <div class="outlier-ratio">1619x виральность</div>
+          </div>
+          <div class="outlier-stats">Канал: @городские_истории (420 сабов) • 680,000 просмотров</div>
+          <div class="quote-box" style="margin-bottom: 6px;">«В 14:00 банкоматы перестали выдавать наличку. В 14:15 карты заблокировались во всей стране.»</div>
+          <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="loadOutlierToStudio(1)">
+            🎬 Взять в сценарий мультика
+          </button>
+        </div>
+
+        <!-- Аномалия 2 -->
+        <div class="outlier-item">
+          <div class="outlier-header">
+            <div style="font-size: 14px; font-weight: bold;">Лифт поехал на этаж -5</div>
+            <div class="outlier-ratio">752x виральность</div>
+          </div>
+          <div class="outlier-stats">Канал: @deep_lift_stories (1,250 сабов) • 940,000 просмотров</div>
+          <div class="quote-box" style="margin-bottom: 6px;">«В обычной 9-этажке дисплей лифта показал минус один... минус два...»</div>
+          <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="loadOutlierToStudio(2)">
+            🎬 Взять в сценарий мультика
+          </button>
+        </div>
+
+        <!-- Аномалия 3 -->
+        <div class="outlier-item">
+          <div class="outlier-header">
+            <div style="font-size: 14px; font-weight: bold;">Камеры начали следить за тобой</div>
+            <div class="outlier-ratio">550x виральность</div>
+          </div>
+          <div class="outlier-stats">Канал: @watcher_eyes (890 сабов) • 490,000 просмотров</div>
+          <div class="quote-box" style="margin-bottom: 6px;">«Каждый раз, когда я прохожу мимо фонаря, объектив поворачивается на моё лицо.»</div>
+          <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="loadOutlierToStudio(3)">
+            🎬 Взять в сценарий мультика
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ВИДЕО-СТУДИЯ (БАННЕРЫ И FFmpeg) -->
+    <div id="tab-video" class="tab-content">
+      <div class="card">
+        <div class="card-title"><span>✂️</span> Студия Баннеров & Сплиттеров</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+          Инструмент наложения стильных водяных знаков и плашек подписи в вертикальном формате 9:16.
+        </p>
+
+        <span class="label">Текст баннера / канала</span>
+        <input type="text" class="input-box" id="banner-text" style="min-height: 44px; height: 44px;" value="ПОДПИШИСЬ • @riz_videostudio">
+
+        <span class="label">Позиция баннера</span>
+        <div class="chips-group">
+          <div class="chip active">Внизу видео (Стандарт)</div>
+          <div class="chip">Сверху видео</div>
+          <div class="chip">По центру (Водяной знак)</div>
+        </div>
+
+        <div style="background: #000; border-radius: 12px; height: 160px; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; border: 1px solid var(--card-border);">
+          <div style="color: #555; font-size: 12px;">ПРЕДПРОСМОТР ВЕРТИКАЛЬНОГО РОЛИКА</div>
+          <div id="preview-banner" style="position: absolute; bottom: 15px; left: 10px; right: 10px; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); padding: 6px; text-align: center; border-radius: 8px; font-size: 12px; color: #FFF; font-weight: bold;">
+            ПОДПИШИСЬ • @riz_videostudio
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="applyBannerHint()">
+          📱 Как применить к видео
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('stories')">
+      <div class="nav-icon">🎲</div>
+      <div>Сюжеты</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('enhance')">
+      <div class="nav-icon">🚀</div>
+      <div>Улучшатор</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('outliers')">
+      <div class="nav-icon">🎯</div>
+      <div>Аномалии</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('video')">
+      <div class="nav-icon">✂️</div>
+      <div>Видео</div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast">✓ Готово!</div>
+
+  <script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.expand();
+      tg.ready();
+      tg.setHeaderColor('#0B1422');
+      tg.setBackgroundColor('#0B1422');
+    }
+
+    function haptic() {
+      if (tg?.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
+    }
+
+    function showToast(text) {
+      const t = document.getElementById('toast');
+      t.innerText = text;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // Переключение вкладок
+    function switchTab(tabName) {
+      haptic();
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      document.getElementById('tab-' + tabName).classList.add('active');
+      event.currentTarget.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Настройка чипсов (кнопок выбора)
+    document.querySelectorAll('.chips-group').forEach(group => {
+      group.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          haptic();
+          group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+        });
+      });
+    });
+
+    // Интерактивный генератор сюжетов
+    const sampleStories = {
+      what_if: {
+        title: "Что если в городе исчезнут деньги на 24 часа?",
+        hook: "В 14:00 терминалы перестали выдавать наличку. В 14:15 карты превратились в куски пластика.",
+        hud: "ВРЕМЯ: 14:15 | БАЛАНС: 0 ₽ | НАЛИЧКА: 1 500 ₽ | РИСК: 45%",
+        steps: [
+          "1. Банкоматы мигают красным отказом, на улице собирается толпа.",
+          "2. Герой бежит в круглосуточный киоск, где еще принимают монеты.",
+          "3. Автоматические двери магазинов блокируются электронной защитой.",
+          "4. На старом городском таксофоне раздается звонок лично герою."
+        ],
+        cliffhanger: "Голос в трубке говорит: 'У тебя есть ровно 15 минут, пока не отключили свет в метро'."
+      },
+      cameras: {
+        title: "ГородОко: Что если на городской камере ты увидел себя?",
+        hook: "Я листал городские камеры перед сном. На камере 2817 стоял человек в моей одежде.",
+        hud: "КАМЕРА: 2817 | СТАТУС: В ЭФИРЕ | ЗРИТЕЛИ: 1 (ТЫ) | РИСК: 60%",
+        steps: [
+          "1. Прямой эфир с задержкой 0 секунд показывает перекрёсток у дома.",
+          "2. Двойник на экране поворачивается и смотрит прямо в объектив.",
+          "3. Герой подходит к окну — фигура на экране делает точно такой же шаг.",
+          "4. На телефон приходит уведомление от приложения: 'Вы обнаружены'."
+        ],
+        cliffhanger: "Двойник на экране достаёт телефон, и в твоей реальной комнате раздаётся звонок."
+      },
+      survival: {
+        title: "Температура падает на 1°C каждые 5 минут",
+        hook: "В 18:00 было +2°C. В 19:00 уже -10°C. В батареях замерзла вода.",
+        hud: "ТЕМПЕРАТУРА: -22°C | ВРЕМЯ: 3 ЧАСА | ТЕПЛО: 28% | РИСК: 80%",
+        steps: [
+          "1. Герой строит изолированное укрытие в центре комнаты из матрасов.",
+          "2. На пластиковых окнах появляются морозные трещины от перепада температур.",
+          "3. Мобильная связь гаснет, в трубах подъезда слышен треск замерзающей воды.",
+          "4. Попытка сохранить тепло свечами при контроле кислорода."
+        ],
+        cliffhanger: "Градусник показывает -70°C, а в дверь квартиры начинает кто-то яростно стучать."
+      },
+      anomalies: {
+        title: "Лифт поехал на этаж -5: Правила выживания",
+        hook: "В обычной 9-этажке дисплей лифта показал минус один... минус два...",
+        hud: "ЭТАЖ: -4 | СВЯЗЬ: НЕТ | СВЕТ: 15% | ДВЕРИ: ЗАБЛОКИРОВАНЫ",
+        steps: [
+          "1. Кабина застревает в сыром тоннеле, свет начинает мерцать желтым.",
+          "2. Створки приоткрываются на 10 см, за ними виден заброшенный кирпичный коридор.",
+          "3. Правило: не выходить, пока горит аварийная кнопка диспетчера.",
+          "4. Снаружи раздаются тяжелые шаги по бетонному полу."
+        ],
+        cliffhanger: "Шаги останавливаются прямо у дверей, и кто-то снаружи нажимает кнопку вызова."
+      }
+    };
+
+    let currentStory = null;
+
+    function generateStory() {
+      haptic();
+      const activeTheme = document.querySelector('#theme-chips .chip.active').dataset.val;
+      const data = sampleStories[activeTheme] || sampleStories.what_if;
+      currentStory = data;
+
+      document.getElementById('res-title').innerText = data.title;
+      document.getElementById('res-hook').innerText = `«${data.hook}»`;
+      document.getElementById('res-hud').innerText = data.hud;
+      document.getElementById('res-steps').innerHTML = data.steps.join('<br>');
+      document.getElementById('res-cliffhanger').innerText = `Клиффхэнгер: ${data.cliffhanger}`;
+
+      document.getElementById('story-result-card').style.display = 'block';
+      document.getElementById('story-result-card').scrollIntoView({ behavior: 'smooth' });
+      showToast('✓ Сюжет сгенерирован!');
+    }
+
+    function generateEpisode2() {
+      haptic();
+      if (!currentStory) return;
+      document.getElementById('res-title').innerText = `Серия 2: ${currentStory.title} (Час Расплаты)`;
+      document.getElementById('res-hook').innerText = `«Стук в дверь прекратился. Но в глазок я увидел, что на площадке стоит включённая камера...»`;
+      document.getElementById('res-hud').innerText = `ВРЕМЯ: 03:15 | ЗАРЯД: 9% | ДВЕРЬ: ПОД НАБЛЮДЕНИЕМ | РИСК: 92%`;
+      document.getElementById('res-steps').innerHTML = `
+        1. Герой понимает, что подъезд транслируется в закрытый стрим.<br>
+        2. Три шага контр-выживания: обесточить щиток, заклеить глазок, подать сигнал.<br>
+        3. Сообщение на телефон: 400 зрителей голосуют, выломать ли дверь.<br>
+        4. Шкала голосования доходит до 100%.
+      `;
+      document.getElementById('res-cliffhanger').innerText = `Клиффхэнгер: Снаружи раздаётся скрежет монтировки, замок начинает проворачиваться.`;
+      showToast('✓ Серия 2 создана!');
+    }
+
+    function generateCodePrompts() {
+      haptic();
+      alert(`🎨 КОДОВЫЕ ПРОМПТЫ ДЛЯ АНИМАЦИИ (GSAP/HTML5):\n\n1. Сцена 1 (00:00-00:06): Ночной фон #0B1422, силуэт со спины, экран #EDBF74.\n2. Сцена 2 (00:06-00:25): Плашка HUD закругление 24px, плавная анимация шкалы риска.\n3. Сцена 3 (00:25-00:50): Полный переход на #000000, белая векторная иконка действия по центру.\n4. Финал: Зум камеры scale(1.15) и красная рамка опасности.`);
+    }
+
+    function sendDataToTelegram() {
+      haptic();
+      if (tg && currentStory) {
+        tg.sendData(JSON.stringify(currentStory));
+      } else {
+        copyResult();
+      }
+    }
+
+    function copyResult() {
+      haptic();
+      showToast('📋 Скопировано в буфер!');
+    }
+
+    // Улучшатор
+    function enhanceIdeaAction() {
+      haptic();
+      const txt = document.getElementById('enhance-input').value.trim();
+      if (!txt) {
+        alert('Пожалуйста, введите тему или идею!');
+        return;
+      }
+
+      document.getElementById('enh-title').innerText = `Что если ${txt.toLowerCase()} ночью, когда отключены все выходы?`;
+      document.getElementById('enh-hook').innerText = `«Все думали, что это просто слухи. Пока в 02:40 на экране не запустился обратный отсчет...»`;
+      document.getElementById('enh-stakes').innerText = `Каждое решение отнимает ресурс. Любая попытка позвать на помощь удваивает шкалу риска на экране.`;
+      document.getElementById('enh-hud').innerText = `ВРЕМЯ: 02:40 | ШАНС: 14% | ШУМ В ДОМЕ: 42 дБ | РИСК: 85%`;
+      document.getElementById('enh-cliff').innerText = `Экран телефона гаснет, и из темноты коридора раздаётся механический голос.`;
+
+      document.getElementById('enhance-result-card').style.display = 'block';
+      document.getElementById('enhance-result-card').scrollIntoView({ behavior: 'smooth' });
+      showToast('🔥 Идея усилена!');
+    }
+
+    function loadOutlierToStudio(id) {
+      haptic();
+      switchTab('stories');
+      const themeMap = { 1: 'what_if', 2: 'anomalies', 3: 'cameras' };
+      const themeVal = themeMap[id] || 'what_if';
+      
+      document.querySelectorAll('#theme-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.val === themeVal);
+      });
+      generateStory();
+    }
+
+    function applyBannerHint() {
+      haptic();
+      alert(`🏷️ Как наложить баннер через бота:\n\n1. Закройте мини-приложение.\n2. Отправьте видеоролик прямо в диалог с ботом.\n3. В подписи к видео напишите желаемый текст баннера (например: "ПОДПИСЫВАЙСЯ").\n\nБот обработает файл через FFmpeg и пришлет готовое видео!`);
+    }
+
+    // Обновление превью баннера
+    document.getElementById('banner-text')?.addEventListener('input', (e) => {
+      document.getElementById('preview-banner').innerText = e.target.value || 'ВАШ БАННЕР';
+    });
+  </script>
+</body>
+</html>
