@@ -1,789 +1,976 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>VideoStudio Mini App</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg-dark: #0B1422;
-      --card-bg: #141F32;
-      --card-border: #1E2E48;
-      --accent-amber: #EDBF74;
-      --accent-cyan: #56CCF2;
-      --accent-danger: #D95D4E;
-      --accent-green: #2ECC71;
-      --text-main: #F5F0E6;
-      --text-muted: #8E9BAE;
-      --radius: 16px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>VideoStudio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#07090F;
+  --s1:#0E131E;
+  --s2:#151C2C;
+  --s3:#1C253A;
+  --line:rgba(255,255,255,.08);
+  --line-hi:rgba(245,185,66,.42);
+  --ink:#F4F1EA;
+  --muted:#8792A6;
+  --gold:#F5B942;
+  --gold-dim:rgba(245,185,66,.12);
+  --red:#F05252;
+  --red-dim:rgba(240,82,82,.13);
+  --green:#22C55E;
+  --cyan:#38BDF8;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.45;min-height:100vh}
+body{padding-bottom:calc(88px + env(safe-area-inset-bottom));overflow-x:hidden;
+  background-image:radial-gradient(600px 260px at 85% -6%,rgba(245,185,66,.09),transparent 70%),
+                   radial-gradient(500px 240px at 10% 15%,rgba(56,189,248,.05),transparent 70%);}
+button,input,textarea{font-family:inherit;color:inherit}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
+/* HEADER */
+.top{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  background:rgba(7,9,15,.84);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#F5B942,#E57C35);color:#07090F;
+  display:grid;place-items:center;font-weight:800;font-size:13px;letter-spacing:-.04em;box-shadow:0 4px 14px rgba(245,185,66,.28)}
+.bname{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.bsub{font-size:11px;color:var(--muted)}
+.status{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:600;
+  background:var(--s1);border:1px solid var(--line);color:var(--muted)}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--gold);display:block}
+.status.ok i{background:var(--green);box-shadow:0 0 8px var(--green)}
+.status.ok{color:#B8F2CC;border-color:rgba(34,197,94,.28)}
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      padding-bottom: 90px;
-      overflow-x: hidden;
-      min-height: 100vh;
-    }
+/* CONTAINER & TABS */
+.wrap{max-width:600px;margin:0 auto;padding:14px 16px}
+.tab{display:none;animation:tabIn .22s ease-out}
+.tab.on{display:block}
+@keyframes tabIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
-    /* HEADER */
-    .header {
-      padding: 20px 16px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--card-border);
-      background: rgba(11, 20, 34, 0.85);
-      backdrop-filter: blur(12px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+/* CARDS */
+.panel{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.pt{font-size:16px;font-weight:700;letter-spacing:-.015em;display:flex;align-items:center;gap:8px}
+.pdesc{font-size:13px;color:var(--muted);margin-bottom:14px}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+/* 2x2 SELECTOR MATRIX */
+.matrix{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{background:var(--s2);border:1px solid var(--line);border-radius:14px;padding:11px 12px;text-align:left;cursor:pointer;
+  transition:border-color .15s,background .15s,transform .1s;display:flex;flex-direction:column;gap:4px;min-height:66px}
+.tile:active{transform:scale(.98);background:var(--s3)}
+.tile-k{font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
+.tile-v{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    .brand-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #EDBF74, #D95D4E);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      font-weight: bold;
-    }
+/* SEGMENTED LENGTH */
+.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--bg);padding:4px;border-radius:12px;border:1px solid var(--line);margin-bottom:14px}
+.seg button{border:0;background:transparent;padding:8px 0;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:.15s}
+.seg button.on{background:var(--s3);color:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.35)}
 
-    .brand-title {
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
+/* BUTTONS */
+.btn{width:100%;min-height:46px;padding:12px 16px;border-radius:13px;border:0;font-size:14.5px;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s,filter .15s}
+.btn:active{transform:scale(.98);filter:brightness(.92)}
+.btn-gold{background:linear-gradient(135deg,#F5B942,#E59D2C);color:#07090F;box-shadow:0 8px 20px rgba(245,185,66,.26)}
+.btn-soft{background:var(--s2);color:var(--ink);border:1px solid var(--line)}
+.btn-soft:hover{border-color:rgba(255,255,255,.16)}
+.btn-sm{min-height:38px;padding:8px 12px;font-size:12.5px;border-radius:11px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 
-    .brand-subtitle {
-      font-size: 11px;
-      color: var(--accent-amber);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+/* STORYBOARD + 9:16 MONITOR */
+.stage-top{display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:stretch;margin-bottom:14px}
+.phone{aspect-ratio:9/16;border-radius:14px;border:1.5px solid rgba(255,255,255,.14);background:#05070B;position:relative;overflow:hidden;
+  padding:8px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 24px rgba(0,0,0,.85)}
+.phone.st-anime{background:radial-gradient(circle at 50% 35%,rgba(236,72,153,.24),#080B14 72%)}
+.phone.st-noir{background:linear-gradient(180deg,#18181B,#09090B);filter:grayscale(1) contrast(1.15)}
+.phone.st-neon{background:radial-gradient(circle at 30% 30%,rgba(56,189,248,.24),rgba(192,38,211,.12) 55%,#060810)}
+.phone.st-cctv{background:repeating-linear-gradient(0deg,rgba(34,197,94,.05) 0 2px,#030804 2px 4px)}
+.phone.st-code2d{background:radial-gradient(circle at 50% 45%,rgba(245,185,66,.16),#0B1422 72%)}
+.ph-hud{background:rgba(14,19,30,.92);border:1px solid rgba(245,185,66,.35);border-radius:7px;padding:4px 5px;
+  font-family:'JetBrains Mono',monospace;font-size:7px;line-height:1.25;color:var(--gold);word-break:break-word}
+.ph-bar{height:3px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:3px;overflow:hidden}
+.ph-bar b{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red))}
+.ph-center{text-align:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.86);padding:4px 2px;
+  text-shadow:0 2px 8px rgba(0,0,0,.9);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.ph-time{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);display:flex;justify-content:space-between}
 
-    .badge-live {
-      background: rgba(46, 204, 113, 0.15);
-      color: var(--accent-green);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1px solid rgba(46, 204, 113, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
+.st-head{display:flex;flex-direction:column;justify-content:space-between}
+.st-title{font-size:17px;font-weight:800;line-height:1.22;letter-spacing:-.02em;margin-bottom:8px}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:8px;background:var(--s2);border:1px solid var(--line);color:var(--muted)}
+.tag.gold{color:var(--gold);background:var(--gold-dim);border-color:rgba(245,185,66,.26)}
+.tag.cyan{color:var(--cyan);background:rgba(56,189,248,.11);border-color:rgba(56,189,248,.25)}
+.tag.red{color:#FCA5A5;background:var(--red-dim);border-color:rgba(240,82,82,.26)}
 
-    .badge-live::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      background: var(--accent-green);
-      border-radius: 50%;
-      box-shadow: 0 0 6px var(--accent-green);
-    }
+.lbl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:12px 0 6px;display:block}
+.hook-box{border-left:3px solid var(--gold);background:rgba(245,185,66,.07);padding:10px 12px;border-radius:0 12px 12px 0;font-size:14px}
+.hud-strip{background:#060910;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;color:var(--gold);line-height:1.5}
+.risk-track{height:5px;background:var(--s2);border-radius:4px;margin-top:7px;overflow:hidden}
+.risk-track b{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red));transition:width .5s ease}
 
-    /* CONTAINER & TABS */
-    .container {
-      padding: 16px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
+/* TIMELINE BEATS */
+.beats{border-left:1.5px solid var(--s3);margin-left:6px;padding-left:14px;display:flex;flex-direction:column;gap:10px}
+.beat-it{position:relative;font-size:13.5px;line-height:1.45}
+.beat-it::before{content:'';position:absolute;left:-19px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--s1);border:2px solid var(--gold)}
+.beat-t{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);font-weight:700;display:block;margin-bottom:2px}
+.cliff-box{border-left:3px solid var(--red);background:var(--red-dim);padding:10px 12px;border-radius:0 12px 12px 0;font-size:13.5px;color:#FECACA}
 
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.25s ease-out;
-    }
+/* MODIFIER CHIPS */
+.mods{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.mod{padding:8px 12px;border-radius:10px;background:var(--s2);border:1px solid var(--line);font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+.mod:active{background:var(--s3);border-color:var(--gold)}
 
-    .tab-content.active {
-      display: block;
-    }
+/* FEED ITEMS (TIKTOK & NEWS) */
+.feed-card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.fc-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.x-badge{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:4px 9px;border-radius:9px;
+  background:var(--gold-dim);color:var(--gold);border:1px solid rgba(245,185,66,.32)}
+.fc-author{font-size:13px;font-weight:700;color:var(--ink)}
+.fc-meta{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px}
+.fc-desc{font-size:14px;line-height:1.45;margin-bottom:10px;color:#E6E9F0}
+.meter{height:4px;background:var(--s2);border-radius:4px;overflow:hidden;margin-bottom:10px}
+.meter b{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold))}
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+/* INPUTS */
+textarea,input[type=text]{width:100%;background:#090D16;border:1px solid var(--line);border-radius:13px;padding:12px 14px;
+  font-size:14.5px;color:var(--ink);outline:none;transition:border-color .15s}
+textarea{min-height:92px;resize:vertical}
+textarea:focus,input:focus{border-color:var(--gold)}
 
-    /* CARD STYLES */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    }
+/* VIDEO BANNER STUDIO */
+.bprev-wrap{display:flex;justify-content:center;margin:12px 0}
+.bprev{width:170px;aspect-ratio:9/16;border-radius:20px;border:2px solid var(--s3);background:linear-gradient(160deg,#121B2E,#060910);
+  position:relative;overflow:hidden;box-shadow:0 14px 36px rgba(0,0,0,.5)}
+.safe-top{position:absolute;top:0;left:0;right:0;height:12%;border-bottom:1px dashed rgba(255,255,255,.12)}
+.safe-bot{position:absolute;bottom:0;left:0;right:0;height:20%;border-top:1px dashed rgba(255,255,255,.12)}
+.bn-bar{position:absolute;left:7%;right:7%;padding:7px 8px;border-radius:9px;text-align:center;font-size:10px;font-weight:800;letter-spacing:.01em;
+  background:rgba(8,13,22,.9);border:1.5px solid var(--gold);color:#fff;transition:all .2s ease}
+.bn-bar.c-red{border-color:var(--red);background:rgba(36,10,12,.92)}
+.bn-bar.c-min{border-color:rgba(255,255,255,.35);background:rgba(0,0,0,.85)}
 
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-main);
-    }
+/* BOTTOM DOCK */
+.dock{position:fixed;bottom:0;left:0;right:0;z-index:45;display:grid;grid-template-columns:repeat(4,1fr);
+  background:rgba(10,14,23,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.di{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 0;color:var(--muted);
+  font-size:11px;font-weight:600;cursor:pointer;border:0;background:transparent}
+.di svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.di.on{color:var(--gold)}
 
-    .card-title span {
-      font-size: 18px;
-    }
+/* BOTTOM SHEET */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(4px);z-index:90;display:none;align-items:flex-end}
+.sheet-bg.on{display:flex}
+.sheet{width:100%;max-width:600px;margin:0 auto;background:var(--s1);border-top:1px solid var(--line);border-radius:22px 22px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));max-height:86vh;overflow-y:auto;animation:shUp .22s ease-out}
+@keyframes shUp{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
+.grab{width:38px;height:4px;border-radius:4px;background:rgba(255,255,255,.18);margin:0 auto 12px}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.opt{background:var(--s2);border:1px solid var(--line);border-radius:13px;padding:11px 12px;text-align:left;cursor:pointer}
+.opt.on{border-color:var(--gold);background:var(--gold-dim)}
+.opt-t{font-size:13.5px;font-weight:700;color:var(--ink)}
+.opt-d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.3}
 
-    /* BUTTONS */
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: transform 0.1s ease, filter 0.15s ease;
-    }
+.pbox{background:#060910;border:1px solid var(--line);border-radius:13px;padding:12px;font-family:'JetBrains Mono',monospace;
+  font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;max-height:42vh;overflow:auto;margin-top:10px;user-select:text}
+.scroll-x{display:flex;gap:7px;overflow-x:auto;padding:4px 0 6px;scrollbar-width:none}.scroll-x::-webkit-scrollbar{display:none}
+.pill-btn{flex:0 0 auto;padding:7px 12px;border-radius:999px;background:var(--s2);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.pill-btn.on{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
 
-    .btn:active {
-      transform: scale(0.98);
-      filter: brightness(0.9);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #EDBF74, #E2A440);
-      color: #0B1422;
-      box-shadow: 0 4px 14px rgba(237, 191, 116, 0.35);
-    }
-
-    .btn-secondary {
-      background: #1C2B44;
-      color: var(--text-main);
-      border: 1px solid var(--card-border);
-      margin-top: 10px;
-    }
-
-    .btn-danger {
-      background: linear-gradient(135deg, #D95D4E, #B93C2F);
-      color: white;
-    }
-
-    /* INPUTS & CHIPS */
-    .label {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      display: block;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .input-box {
-      width: 100%;
-      background: #0D1626;
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px;
-      color: var(--text-main);
-      font-size: 14px;
-      outline: none;
-      resize: vertical;
-      min-height: 85px;
-      margin-bottom: 14px;
-      font-family: inherit;
-    }
-
-    .input-box:focus {
-      border-color: var(--accent-amber);
-    }
-
-    .chips-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-
-    .chip {
-      padding: 8px 14px;
-      background: #0E1829;
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      font-size: 13px;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .chip.active {
-      background: rgba(237, 191, 116, 0.15);
-      border-color: var(--accent-amber);
-      color: var(--accent-amber);
-      font-weight: 600;
-    }
-
-    /* HUD PREVIEW BOX */
-    .hud-box {
-      background: #080D16;
-      border: 1px solid #1A263B;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-family: 'SF Mono', Consolas, monospace;
-      font-size: 12px;
-      color: var(--accent-amber);
-      margin: 10px 0;
-      letter-spacing: 0.05em;
-    }
-
-    .quote-box {
-      border-left: 3px solid var(--accent-amber);
-      padding: 8px 12px;
-      background: rgba(237, 191, 116, 0.06);
-      border-radius: 0 8px 8px 0;
-      font-size: 13px;
-      margin: 10px 0;
-      line-height: 1.4;
-    }
-
-    .danger-box {
-      border-left: 3px solid var(--accent-danger);
-      padding: 8px 12px;
-      background: rgba(217, 93, 78, 0.08);
-      border-radius: 0 8px 8px 0;
-      font-size: 13px;
-      color: #FFA59B;
-      margin: 10px 0;
-    }
-
-    /* OUTLIER CARD */
-    .outlier-item {
-      background: #0F1A2C;
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-
-    .outlier-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-
-    .outlier-ratio {
-      background: rgba(237, 191, 116, 0.2);
-      color: var(--accent-amber);
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .outlier-stats {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    /* BOTTOM NAV BAR */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 70px;
-      background: rgba(11, 20, 34, 0.95);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid var(--card-border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 100;
-      padding: 0 10px;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: color 0.15s;
-      flex: 1;
-      padding: 6px 0;
-    }
-
-    .nav-item.active {
-      color: var(--accent-amber);
-      font-weight: 700;
-    }
-
-    .nav-icon {
-      font-size: 20px;
-    }
-
-    /* TOAST */
-    .toast {
-      position: fixed;
-      bottom: 85px;
-      left: 50%;
-      transform: translateX(-50%) translateY(30px);
-      background: #2ECC71;
-      color: #0B1422;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 700;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-      opacity: 0;
-      transition: all 0.25s ease;
-      pointer-events: none;
-      z-index: 200;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-  </style>
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,24px);background:var(--ink);color:#07090F;font-weight:700;font-size:13px;
+  padding:9px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.22s;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.toast.on{opacity:1;transform:translate(-50%,0)}.toast.err{background:var(--red);color:#fff}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.22);border-top-color:var(--gold);border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="brand">
-      <div class="brand-logo">VS</div>
-      <div>
-        <div class="brand-title">VideoStudio AI</div>
-        <div class="brand-subtitle">Мультфильмы & Скаут</div>
-      </div>
-    </div>
-    <div class="badge-live">ONLINE 24/7</div>
-  </div>
-
-  <div class="container">
-
-    <!-- TAB 1: СЮЖЕТЫ И МУЛЬТИКИ -->
-    <div id="tab-stories" class="tab-content active">
-      <div class="card">
-        <div class="card-title"><span>🎲</span> Генератор вирусного сюжета</div>
-        
-        <span class="label">Тематика</span>
-        <div class="chips-group" id="theme-chips">
-          <div class="chip active" data-val="what_if">Что если?..</div>
-          <div class="chip" data-val="cameras">ГородОко (Камеры)</div>
-          <div class="chip" data-val="survival">Блэкаут / Холод</div>
-          <div class="chip" data-val="anomalies">Лифт на -5 этаж</div>
-        </div>
-
-        <span class="label">Главный герой</span>
-        <div class="chips-group" id="char-chips">
-          <div class="chip active" data-val="max">Макс (студент)</div>
-          <div class="chip" data-val="hoodie">Парень в синем худи</div>
-          <div class="chip" data-val="grandma">Бабушка Валя</div>
-          <div class="chip" data-val="courier">Ночной курьер</div>
-        </div>
-
-        <span class="label">Длина ролика</span>
-        <div class="chips-group" id="length-chips">
-          <div class="chip" data-val="45">45 сек</div>
-          <div class="chip active" data-val="60">60 сек (Shorts)</div>
-          <div class="chip" data-val="75">75 сек</div>
-        </div>
-
-        <button class="btn btn-primary" onclick="generateStory()">
-          ⚡ Сгенерировать сюжет
-        </button>
-      </div>
-
-      <!-- РЕЗУЛЬТАТ СЮЖЕТА -->
-      <div id="story-result-card" class="card" style="display: none;">
-        <div class="card-title" id="res-title">Заголовок сюжета</div>
-        
-        <span class="label">Хук первых 3 секунд</span>
-        <div class="quote-box" id="res-hook">«...»</div>
-
-        <span class="label">HUD интерфейс сверху кадра</span>
-        <div class="hud-box" id="res-hud">ВРЕМЯ: 00:00 | РИСК: 10%</div>
-
-        <span class="label">Ключевые сцены (таймлайн)</span>
-        <div id="res-steps" style="font-size: 13px; line-height: 1.6; margin: 8px 0; color: #D1D8E0;"></div>
-
-        <span class="label">Клиффхэнгер (крючок на серию 2)</span>
-        <div class="danger-box" id="res-cliffhanger">...</div>
-
-        <button class="btn btn-secondary" onclick="generateEpisode2()">
-          🎬 Сгенерировать Серию 2
-        </button>
-        <button class="btn btn-secondary" onclick="generateCodePrompts()">
-          🎨 Кодовые промпты (GSAP/HTML)
-        </button>
-        <button class="btn btn-primary" style="margin-top: 10px;" onclick="sendDataToTelegram()">
-          📤 Отправить сценарий в чат
-        </button>
-      </div>
-    </div>
-
-    <!-- TAB 2: УЛУЧШАТОР И АНТИПЛАГИАТ -->
-    <div id="tab-enhance" class="tab-content">
-      <div class="card">
-        <div class="card-title"><span>🚀</span> Улучшатор & 100% Антиплагиат</div>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-          Вставьте любую идею или чужое видео. Бот переформулирует сюжет, удвоит ставки и завернёт в формат кодового мультика.
-        </p>
-
-        <textarea class="input-box" id="enhance-input" placeholder="Например: Что если все банкоматы выдают чужие деньги..."></textarea>
-
-        <button class="btn btn-primary" onclick="enhanceIdeaAction()">
-          🔥 Усилить идею и убрать плагиат
-        </button>
-      </div>
-
-      <!-- РЕЗУЛЬТАТ УЛУЧШЕНИЯ -->
-      <div id="enhance-result-card" class="card" style="display: none;">
-        <div class="card-title" style="color: var(--accent-amber);">✨ Готовый уникальный концепт</div>
-
-        <span class="label">Новое вирусное название</span>
-        <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px;" id="enh-title">...</div>
-
-        <span class="label">Ударный хук (0–3 сек)</span>
-        <div class="quote-box" id="enh-hook">...</div>
-
-        <span class="label">Удвоение ставок</span>
-        <div style="font-size: 13px; margin: 8px 0; color: #D1D8E0;" id="enh-stakes">...</div>
-
-        <span class="label">HUD интерфейс</span>
-        <div class="hud-box" id="enh-hud">...</div>
-
-        <span class="label">Финальный поворот</span>
-        <div class="danger-box" id="enh-cliff">...</div>
-
-        <button class="btn btn-primary" onclick="copyResult()">
-          📋 Скопировать готовый сценарий
-        </button>
-      </div>
-    </div>
-
-    <!-- TAB 3: СКАУТ АНОМАЛИЙ -->
-    <div id="tab-outliers" class="tab-content">
-      <div class="card">
-        <div class="card-title"><span>🎯</span> Радар вирусных аномалий дня</div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
-          Видео с каналов с малой аудиторией, которые набрали от 500k до 1M+ просмотров (выстрелила сама идея!).
-        </p>
-
-        <!-- Аномалия 1 -->
-        <div class="outlier-item">
-          <div class="outlier-header">
-            <div style="font-size: 14px; font-weight: bold;">Что если исчезнут деньги в банкоматах?</div>
-            <div class="outlier-ratio">1619x виральность</div>
-          </div>
-          <div class="outlier-stats">Канал: @городские_истории (420 сабов) • 680,000 просмотров</div>
-          <div class="quote-box" style="margin-bottom: 6px;">«В 14:00 банкоматы перестали выдавать наличку. В 14:15 карты заблокировались во всей стране.»</div>
-          <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="loadOutlierToStudio(1)">
-            🎬 Взять в сценарий мультика
-          </button>
-        </div>
-
-        <!-- Аномалия 2 -->
-        <div class="outlier-item">
-          <div class="outlier-header">
-            <div style="font-size: 14px; font-weight: bold;">Лифт поехал на этаж -5</div>
-            <div class="outlier-ratio">752x виральность</div>
-          </div>
-          <div class="outlier-stats">Канал: @deep_lift_stories (1,250 сабов) • 940,000 просмотров</div>
-          <div class="quote-box" style="margin-bottom: 6px;">«В обычной 9-этажке дисплей лифта показал минус один... минус два...»</div>
-          <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="loadOutlierToStudio(2)">
-            🎬 Взять в сценарий мультика
-          </button>
-        </div>
-
-        <!-- Аномалия 3 -->
-        <div class="outlier-item">
-          <div class="outlier-header">
-            <div style="font-size: 14px; font-weight: bold;">Камеры начали следить за тобой</div>
-            <div class="outlier-ratio">550x виральность</div>
-          </div>
-          <div class="outlier-stats">Канал: @watcher_eyes (890 сабов) • 490,000 просмотров</div>
-          <div class="quote-box" style="margin-bottom: 6px;">«Каждый раз, когда я прохожу мимо фонаря, объектив поворачивается на моё лицо.»</div>
-          <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="loadOutlierToStudio(3)">
-            🎬 Взять в сценарий мультика
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 4: ВИДЕО-СТУДИЯ (БАННЕРЫ И FFmpeg) -->
-    <div id="tab-video" class="tab-content">
-      <div class="card">
-        <div class="card-title"><span>✂️</span> Студия Баннеров & Сплиттеров</div>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-          Инструмент наложения стильных водяных знаков и плашек подписи в вертикальном формате 9:16.
-        </p>
-
-        <span class="label">Текст баннера / канала</span>
-        <input type="text" class="input-box" id="banner-text" style="min-height: 44px; height: 44px;" value="ПОДПИШИСЬ • @riz_videostudio">
-
-        <span class="label">Позиция баннера</span>
-        <div class="chips-group">
-          <div class="chip active">Внизу видео (Стандарт)</div>
-          <div class="chip">Сверху видео</div>
-          <div class="chip">По центру (Водяной знак)</div>
-        </div>
-
-        <div style="background: #000; border-radius: 12px; height: 160px; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; border: 1px solid var(--card-border);">
-          <div style="color: #555; font-size: 12px;">ПРЕДПРОСМОТР ВЕРТИКАЛЬНОГО РОЛИКА</div>
-          <div id="preview-banner" style="position: absolute; bottom: 15px; left: 10px; right: 10px; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); padding: 6px; text-align: center; border-radius: 8px; font-size: 12px; color: #FFF; font-weight: bold;">
-            ПОДПИШИСЬ • @riz_videostudio
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="applyBannerHint()">
-          📱 Как применить к видео
-        </button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BOTTOM NAVIGATION -->
-  <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('stories')">
-      <div class="nav-icon">🎲</div>
-      <div>Сюжеты</div>
-    </div>
-    <div class="nav-item" onclick="switchTab('enhance')">
-      <div class="nav-icon">🚀</div>
-      <div>Улучшатор</div>
-    </div>
-    <div class="nav-item" onclick="switchTab('outliers')">
-      <div class="nav-icon">🎯</div>
-      <div>Аномалии</div>
-    </div>
-    <div class="nav-item" onclick="switchTab('video')">
-      <div class="nav-icon">✂️</div>
-      <div>Видео</div>
+<header class="top">
+  <div class="brand">
+    <div class="mark">VS</div>
+    <div>
+      <div class="bname">VideoStudio</div>
+      <div class="bsub">2D мультики · TikTok · Монтаж</div>
     </div>
   </div>
+  <div class="status" id="netStat"><i></i><span id="netTxt">Готов</span></div>
+</header>
 
-  <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="toast">✓ Готово!</div>
+<main class="wrap">
+  <!-- TAB 1: СТУДИЯ -->
+  <section id="tab-create" class="tab on">
+    <div class="panel">
+      <div class="ph">
+        <div class="pt">Сценарий мультика</div>
+      </div>
+      <div class="pdesc">Настройте параметры или сразу нажмите генерацию — всё работает мгновенно.</div>
 
-  <script>
-    // Инициализация Telegram WebApp
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.expand();
-      tg.ready();
-      tg.setHeaderColor('#0B1422');
-      tg.setBackgroundColor('#0B1422');
-    }
+      <div class="matrix">
+        <button class="tile" onclick="openPicker('theme')">
+          <div class="tile-k"><span>Тема</span><span>▾</span></div>
+          <div class="tile-v" id="val-theme">🎲 Случайно</div>
+        </button>
+        <button class="tile" onclick="openPicker('char')">
+          <div class="tile-k"><span>Герой</span><span>▾</span></div>
+          <div class="tile-v" id="val-char">🎲 Случайно</div>
+        </button>
+        <button class="tile" onclick="openPicker('style')">
+          <div class="tile-k"><span>Стиль ИИ</span><span>▾</span></div>
+          <div class="tile-v" id="val-style">💻 Код-анимация 2D</div>
+        </button>
+        <button class="tile" onclick="openPicker('voice')">
+          <div class="tile-k"><span>Озвучка</span><span>▾</span></div>
+          <div class="tile-v" id="val-voice">🎙️ Спокойный мужской</div>
+        </button>
+      </div>
 
-    function haptic() {
-      if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
+      <div class="seg" id="lenSeg"></div>
+
+      <button class="btn btn-gold" onclick="genStory()">Создать сценарий</button>
+    </div>
+
+    <div id="storyMount"></div>
+  </section>
+
+  <!-- TAB 2: TIKTOK РАДАР -->
+  <section id="tab-tiktok" class="tab">
+    <div class="panel">
+      <div class="ph">
+        <div class="pt">TikTok-радар ниши</div>
+        <span class="tag gold" id="ttMode">Живой поиск</span>
+      </div>
+      <div class="pdesc">Ролики в нише «Что если / Выживание / Аномалии» с высоким отношением просмотров к подписчикам.</div>
+      <button class="btn btn-soft btn-sm" id="ttRefreshBtn" onclick="loadTikTok(true)">Обновить из TikTok сейчас</button>
+    </div>
+    <div id="ttList"></div>
+  </section>
+
+  <!-- TAB 3: НОВОСТИ -->
+  <section id="tab-news" class="tab">
+    <div class="panel">
+      <div class="ph">
+        <div class="pt">Жёсткие инфоповоды</div>
+        <span class="tag cyan">08:00 UTC+7</span>
+      </div>
+      <div class="pdesc">Громкие новости за последние сутки: отключения сети, сбои, аномалии. Нажмите на любую, чтобы сделать сценарий.</div>
+      <button class="btn btn-soft btn-sm" id="nwRefreshBtn" onclick="loadNews(true)">Обновить сводку</button>
+    </div>
+    <div id="nwList"></div>
+  </section>
+
+  <!-- TAB 4: ИДЕЯ & ВИДЕО -->
+  <section id="tab-tools" class="tab">
+    <div class="panel">
+      <div class="pt" style="margin-bottom:4px">Улучшатор идей (Антиплагиат)</div>
+      <div class="pdesc">Вставьте чужую тему или заготовку — перепишем с удвоением ставок, новым хуком и HUD.</div>
+      <textarea id="ideaInput" placeholder="Например: что если интернет отключат на 90 дней"></textarea>
+      <button class="btn btn-gold" style="margin-top:10px" onclick="runEnhance()">Усилить и переписать</button>
+    </div>
+
+    <div class="panel">
+      <div class="pt" style="margin-bottom:4px">Баннер на видео 9:16</div>
+      <div class="pdesc">Пунктиром отмечены безопасные зоны Shorts/Reels. Настройте плашку и отправьте ролик боту.</div>
+      <input type="text" id="bnText" value="ПОДПИШИСЬ • @riz_videostudio" maxlength="40" oninput="drawBanner()">
+
+      <span class="lbl">Позиция</span>
+      <div class="seg" style="grid-template-columns:repeat(3,1fr);margin-bottom:8px" id="bnPosSeg">
+        <button data-v="top">Сверху</button>
+        <button data-v="center">По центру</button>
+        <button data-v="bottom" class="on">Снизу</button>
+      </div>
+
+      <span class="lbl">Цвет плашки</span>
+      <div class="seg" style="grid-template-columns:repeat(3,1fr);margin-bottom:10px" id="bnColSeg">
+        <button data-v="gold" class="on">Золото</button>
+        <button data-v="red">Тревога</button>
+        <button data-v="min">Минимал</button>
+      </div>
+
+      <div class="bprev-wrap">
+        <div class="bprev">
+          <div class="safe-top"></div>
+          <div class="bn-bar" id="bnPrev" style="bottom:14%">ПОДПИШИСЬ • @riz_videostudio</div>
+          <div class="safe-bot"></div>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" onclick="sendBannerCfg()">Открыть бота и прислать видео</button>
+      <button class="btn btn-soft" style="margin-top:8px" onclick="openBot('split')">Сплиттер (склейка 2 видео 9:16)</button>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM DOCK -->
+<nav class="dock">
+  <button class="di on" data-tab="create" onclick="goTab('create')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>
+    <span>Студия</span>
+  </button>
+  <button class="di" data-tab="tiktok" onclick="goTab('tiktok')">
+    <svg viewBox="0 0 24 24"><path d="M12 2v14a4 4 0 1 1-4-4"/><path d="M12 6c1.8 2 4 3 7 3"/></svg>
+    <span>TikTok</span>
+  </button>
+  <button class="di" data-tab="news" onclick="goTab('news')">
+    <svg viewBox="0 0 24 24"><path d="M4 5h16v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+    <span>Новости</span>
+  </button>
+  <button class="di" data-tab="tools" onclick="goTab('tools')">
+    <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.7-3.7a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/></svg>
+    <span>Инструменты</span>
+  </button>
+</nav>
+
+<!-- PICKER SHEET -->
+<div class="sheet-bg" id="pickerBg" onclick="if(event.target===this)closePicker()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="pt" id="pickerTitle">Выбор</div>
+    <div class="opt-grid" id="pickerGrid"></div>
+    <button class="btn btn-soft btn-sm" style="margin-top:12px" onclick="closePicker()">Готово</button>
+  </div>
+</div>
+
+<!-- PROMPTS SHEET -->
+<div class="sheet-bg" id="promptBg" onclick="if(event.target===this)closePrompts()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="pt" style="margin-bottom:8px">Промпты для генерации</div>
+    <div class="scroll-x" id="pKindBar">
+      <button class="pill-btn on" data-k="video">Нейросеть-видео</button>
+      <button class="pill-btn" data-k="code">Код (HTML/GSAP)</button>
+      <button class="pill-btn" data-k="voice">Озвучка (TTS)</button>
+      <button class="pill-btn" data-k="cover">Обложка 9:16</button>
+    </div>
+    <span class="lbl">Стиль визуала</span>
+    <div class="scroll-x" id="pStyleBar"></div>
+    <div class="pbox" id="pText">...</div>
+    <div class="grid2">
+      <button class="btn btn-gold btn-sm" onclick="copyText($('pText').textContent)">Скопировать</button>
+      <button class="btn btn-soft btn-sm" onclick="sendPromptChat()">Отправить в чат</button>
+    </div>
+    <button class="btn btn-soft btn-sm" style="margin-top:8px" onclick="closePrompts()">Закрыть</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://videostudio-bot.onrender.com';
+const BOT = 'riz_videostudio_bot';
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#07090F'); tg.setBackgroundColor('#07090F'); } catch(e){} }
+const $ = id => document.getElementById(id);
+const hap = () => { try { tg.HapticFeedback.impactOccurred('light'); } catch(e){} };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+function toast(msg, err) {
+  const e = $('toast');
+  e.textContent = msg;
+  e.className = 'toast on' + (err ? ' err' : '');
+  clearTimeout(e._t);
+  e._t = setTimeout(() => e.className = 'toast', 2400);
+}
+
+/* ==== ВСТРОЕННЫЙ ДВИЖОК (работает мгновенно даже без сервера / VPN) ==== */
+const THEMES = {
+  what_if:   {icon:'⚡', name:'Что если?..', desc:'Невозможное в обычной жизни'},
+  survival:  {icon:'❄️', name:'Выживание', desc:'Город без света, воды, тепла'},
+  cameras:   {icon:'📹', name:'ГородОко', desc:'Камеры, эфиры, двойники'},
+  anomalies: {icon:'🚪', name:'Аномалии', desc:'Лифты, этажи, двери, звуки'},
+  internet:  {icon:'🌐', name:'Интернет и ИИ', desc:'Отключения, блокировки, сети'},
+  money:     {icon:'💸', name:'Деньги и цены', desc:'Банки, карты, наличка'},
+  nature:    {icon:'🌋', name:'Стихия и космос', desc:'Катастрофы, небо, погода'},
+  rules:     {icon:'📜', name:'Правила выживания', desc:'Если видишь это — делай так'},
+};
+const CHARS = {
+  max:        {name:'Макс', desc:'студент, внимательный к деталям', en:'young man in his 20s, messy dark hair, grey jacket'},
+  hoodie:     {name:'Парень в синем худи', desc:'ночной житель в тени', en:'faceless silhouette in a blue hoodie, hood up'},
+  grandma:    {name:'Бабушка Валя', desc:'загадочный свидетель старого дома', en:'elderly woman with headscarf and warm cardigan, sharp eyes'},
+  courier:    {name:'Ночной курьер', desc:'знает изнанку города', en:'delivery courier with thermal backpack and reflective vest'},
+  nika:       {name:'Ника', desc:'блогер, снимает всё на телефон', en:'teenage girl with ponytail holding smartphone, oversized sweater'},
+  palych:     {name:'Инженер Палыч', desc:'практик с фонарём', en:'middle-aged engineer with mustache, overalls, flashlight'},
+  dispatcher: {name:'Диспетчер', desc:'голос на ночном дежурстве', en:'tired night dispatcher with headset before glowing monitors'},
+  cat:        {name:'Кот Бублик', desc:'чует аномалии раньше людей', en:'fluffy ginger cat with wide reflective eyes'},
+};
+const STYLES = {
+  code2d: {icon:'💻', name:'Код-анимация 2D', desc:'SVG + GSAP + HUD', en:'flat 2D vector animation, clean SVG shapes, palette navy #0B1422 / amber #F5B942 / red #F05252, HUD overlay'},
+  flat:   {icon:'🎨', name:'Плоский вектор', desc:'Яркие чёткие контуры', en:'flat vector cartoon, bold outlines, minimal shading, saturated colors'},
+  pixar:  {icon:'🧸', name:'3D мультфильм', desc:'Объёмный мягкий свет', en:'stylized 3D animated film look, soft global illumination, expressive character'},
+  anime:  {icon:'🌸', name:'Аниме', desc:'Кинематографичный свет', en:'anime style, cel shading, dramatic lighting, detailed backgrounds, speed lines'},
+  comic:  {icon:'💥', name:'Комикс', desc:'Тушь и полутона', en:'comic book style, halftone dots, thick ink lines, dynamic framing'},
+  noir:   {icon:'🎞️', name:'Нуар ч/б', desc:'Контраст, дождь, зерно', en:'black and white film noir, high contrast, hard shadows, rain, film grain'},
+  clay:   {icon:'🧱', name:'Пластилин', desc:'Стоп-моушн лепка', en:'claymation stop-motion, visible fingerprints, handmade textures'},
+  pixel:  {icon:'👾', name:'Пиксель-арт', desc:'Ретро 16-bit', en:'16-bit pixel art, limited palette, dithering, retro camera'},
+  cctv:   {icon:'📷', name:'Камера слежения', desc:'Found footage / зелень', en:'found-footage CCTV look, timestamp overlay, fisheye, green scanlines'},
+  paper:  {icon:'📄', name:'Бумажный театр', desc:'Слои вырезанной бумаги', en:'layered paper cut-out diorama, handmade paper textures, soft shadows'},
+  neon:   {icon:'🌃', name:'Неон-киберпанк', desc:'Дождь, циан и маджента', en:'cyberpunk neon, wet street reflections, magenta and cyan glow'},
+  water:  {icon:'🖌️', name:'Акварель', desc:'Мягкие живые мазки', en:'watercolor animation, soft bleeding edges, paper texture'},
+};
+const VOICES = {
+  calm_m:  {icon:'🎙️', name:'Спокойный мужской', desc:'Низкий, интригующий', en:'calm deep male narrator, slow pace, restrained tension, close-mic'},
+  whisper: {icon:'🤫', name:'Шёпот', desc:'Напряжение вблизи', en:'intimate whisper, slow, breathy, close mic, rising tension'},
+  news:    {icon:'📰', name:'Диктор новостей', desc:'Срочный выпуск', en:'authoritative news anchor, clear diction, medium-fast urgent pace'},
+  young_f: {icon:'👧', name:'Молодой женский', desc:'Живой от 1-го лица', en:'young female voice, natural, slightly anxious, conversational'},
+  robot:   {icon:'🤖', name:'Синтез / ИИ', desc:'Холодный и чёткий', en:'synthetic AI voice, flat intonation, slight metallic reverb'},
+  elder:   {icon:'👵', name:'Пожилой рассказчик', desc:'Старые байки дома', en:'elderly voice, warm raspy storyteller cadence'},
+};
+const LENGTHS = [30, 45, 60, 75, 90];
+const NB = {30:3, 45:4, 60:4, 75:5, 90:6};
+
+const PREMISES = {
+  what_if: [
+    ["Что если все банкоматы выдадут чужие деньги?", "В 14:00 банкомат выдал мне 50 000 ₽ — и это были не мои деньги.", "ВРЕМЯ: 14:03 | НА РУКАХ: 50 000 ₽ | ВОЗВРАТ: НЕТ | РИСК: 45%",
+     ["{h} прячет пачку и замечает на купюрах метку времени и чужие отпечатки.", "На экране банкомата идёт отсчёт: вернуть до 15:00.", "Очередь за спиной замолкает: все получили такие же деньги.", "Карты в районе блокируются, наличка становится единственной валютой."],
+     "На купюре проступает адрес, и он совпадает с домом {h}."],
+    ["Что если завтра не наступит?", "Часы показали 23:59 и остановились. Но люди вокруг продолжали идти.", "ВРЕМЯ: 23:59:59 | СЕКУНД: ∞ | В ДВИЖЕНИИ: 99% | РИСК: 38%",
+     ["{h} замечает, что только его телефон показывает реальное время.", "Прохожие повторяют одни и те же жесты, как заевшая запись.", "Единственный, кто двигается иначе, — человек в конце улицы.", "Секундная стрелка делает шаг назад."],
+     "Человек в конце улицы поднимает руку и показывает {h} три пальца."]
+  ],
+  survival: [
+    ["Температура падает на 1°C каждые 5 минут", "В 18:00 было +2°C. В 19:00 уже −10°C. Батареи замёрзли.", "ТЕМПЕРАТУРА: -22°C | ДО ПИКА: 3 Ч | ТЕПЛО: 28% | РИСК: 80%",
+     ["{h} строит укрытие из одеял и матрасов в центре комнаты.", "Окна покрываются глубокими морозными трещинами.", "Свечи и контроль кислорода: форточка на два пальца.", "Связь гаснет, в подъезде слышен треск лопающихся труб."],
+     "Термометр показывает −70°C, а в дверь кто-то яростно стучит."],
+    ["Блэкаут на 72 часа: город без света и воды", "Свет моргнул три раза и погас. Во всём городе. Сразу.", "СВЕТ: 0% | ВОДА: 12 Л | ЗАРЯД: 41% | РИСК: 62%",
+     ["{h} собирает тревожный набор: вода, фонарь, радио.", "Кассы в магазинах гаснут, на улицах пробки без светофоров.", "Радио ловит одну волну: мужской голос диктует числа.", "{h} понимает, что числа — это номера квартир."],
+     "Голос в радио называет номер квартиры {h}."]
+  ],
+  cameras: [
+    ["ГородОко: на камере ты увидел себя", "Я листал уличные камеры перед сном. На камере 2817 стоял человек в моей куртке.", "КАМЕРА: 2817 | СТАТУС: В ЭФИРЕ | ЗРИТЕЛИ: 1 | РИСК: 60%",
+     ["Прямой эфир с задержкой 0 сек показывает перекрёсток у дома {h}.", "Двойник на экране поворачивается прямо в объектив.", "{h} подходит к окну — фигура делает точно такой же шаг.", "На телефон падает пуш: «Объект обнаружен»."],
+     "Двойник достаёт телефон, и в комнате {h} звонит мобильный."]
+  ],
+  anomalies: [
+    ["Лифт поехал на этаж −5: правила выживания", "В обычной девятиэтажке дисплей лифта показал минус один… минус два…", "ЭТАЖ: -4 | СВЯЗЬ: НЕТ | СВЕТ: 15% | РИСК: 70%",
+     ["Кабина замирает в сыром тоннеле, лампа мерцает жёлтым.", "Двери приоткрываются на 10 см: за ними кирпичный коридор.", "Правило 1: не выходить, пока горит аварийная кнопка.", "Правило 2: услышал шаги — задержи дыхание."],
+     "Шаги замирают у створки, и кто-то снаружи жмёт кнопку вызова."]
+  ],
+  internet: [
+    ["Интернет отключили на 90 дней. День первый", "В 08:00 пропала сеть. В 08:10 — все сайты, кроме одного счётчика.", "СЕТЬ: 0% | ДНЕЙ БЕЗ СЕТИ: 1/90 | VPN: ОТКЛ | РИСК: 52%",
+     ["{h} находит открытый Wi-Fi без пароля с именем «ОСТАЛОСЬ 89».", "Терминалы молчат, очереди у банкоматов и газетных киосков.", "На билбордах вместо рекламы идёт единый обратный отсчёт.", "{h} достаёт старый приёмник и ловит передачу."],
+     "Голос из приёмника просит {h} никому не говорить, что он это слышал."]
+  ],
+  money: [
+    ["Карты отключили по всей стране за 15 минут", "В 14:00 терминалы выдали ошибку. В 14:15 на счетах стало по нулям.", "БАЛАНС: 0 ₽ | НАЛИЧКА: 1 500 ₽ | КАРТЫ: БЛОК | РИСК: 58%",
+     ["{h} пытается купить воду — экран горит красным крестом.", "Электронные двери банков блокируются автоматикой.", "{h} находит рабочий уличный таксофон.", "В трубке предлагают сделку: координаты наличных в обмен на услугу."],
+     "Голос называет точную сумму, которая была у {h} на карте."]
+  ],
+  nature: [
+    ["Небо стало зелёным: 40 минут до шторма", "В 16:00 небо позеленело. Все птицы исчезли за минуту.", "ДО ПИКА: 0:40 | ДАВЛЕНИЕ: -38% | УКРЫТИЕ: 300 М | РИСК: 75%",
+     ["{h} закрывает окна, набирает воду и спускается вниз.", "Вместо сирен звучит низкий гул из-под асфальта.", "Соседи спускаются в подвал с мигающим фонарём.", "{h} понимает: гул идёт не с неба, а снизу."],
+     "Асфальт трескается под ногами {h}, и снизу пробивается свет."]
+  ],
+  rules: [
+    ["7 правил ночной смены: не смотри на шестое", "Правило 1: не отвечай на звонки после 03:00. Правило 6 зачёркнуто.", "ПРАВИЛО: 1/7 | ВРЕМЯ: 02:58 | ШУМ: 31 дБ | РИСК: 40%",
+     ["{h} читает памятку на двери — пункты написаны разным почерком.", "Ровно в 03:00 звонит стационарный аппарат.", "В коридоре гаснет лампа, у стены мелькает тень.", "Шестая строчка исчезает с листа прямо на глазах."],
+     "На пустом месте проступает новое правило — почерком самого {h}."]
+  ]
+};
+const GEN_BEATS = [
+  "{h} замечает деталь, которая не сходится с остальным.",
+  "Связь обрывается, и {h} остаётся один на один с ситуацией.",
+  "Появляется второй таймер — ставки мгновенно удваиваются.",
+  "{h} делает шаг, который уже нельзя отменить."
+];
+const LIGHT_EN = {
+  what_if:"cold fluorescent light with one warm amber accent", survival:"dim candlelight and blue moonlight",
+  cameras:"monitor glow in the dark, green LEDs", anomalies:"flickering yellow emergency bulb, deep shadows",
+  internet:"cold screen glow, pulsing red indicator", money:"harsh shop neon, red terminal screens",
+  nature:"green stormy sky, dramatic rim light", rules:"single flickering corridor bulb, long shadows"
+};
+const CAMS = ["slow push-in on the face", "handheld medium shot", "top-down static shot", "extreme close-up on eyes & screen glow", "low angle looking up", "slow pan across dark room"];
+
+/* Реальные свежие ролики TikTok как мгновенная витрина + подгрузка свежих с Render */
+const SEED_TIKTOK = [
+  {url:"https://www.tiktok.com/@temniy.arxiv/video/7710033928307936534", author:"temniy.arxiv", followers:9, views:3034, ratio:337.1, date:"2026-11-20", desc:"5 ПРАВИЛ ВО ВРЕМЯ В**НЫ #мультик #выживание #хоррор", theme:"rules"},
+  {url:"https://www.tiktok.com/@whatifanimation67/video/7698501204192831102", author:"whatifanimation67", followers:19, views:4875, ratio:256.6, date:"2026-10-25", desc:"What if... Part 2 #whatif #animation", theme:"what_if"},
+  {url:"https://www.tiktok.com/@zxcman6/video/7701293847102938112", author:"zxcman6", followers:19, views:3883, ratio:204.4, date:"2026-11-01", desc:"Part 2 #истории #правила #выживание", theme:"rules"},
+  {url:"https://www.tiktok.com/@thestoryworlds_/video/7706192837461029314", author:"thestoryworlds_", followers:15, views:1712, ratio:114.1, date:"2026-11-10", desc:"Выживание на 14 этаже день 1 #история #аниме #мультик", theme:"anomalies"},
+  {url:"https://www.tiktok.com/@playthisanimation/video/7709379448092577046", author:"playthisanimation", followers:157900, views:4600000, ratio:29.1, date:"2026-11-18", desc:"What if you had this Cat as a Pet? #whatif #cat #animation", theme:"what_if"},
+  {url:"https://www.tiktok.com/@business_s_nulya/video/7699182736451029182", author:"business_s_nulya", followers:141, views:1204, ratio:8.5, date:"2026-10-28", desc:"Лифт едет на этаж которого нет! #лифт #аномалия", theme:"anomalies"},
+];
+
+let sel = {theme:'random', char:'random', style:'code2d', voice:'calm_m', length:60};
+let story = null;
+let pKind = 'video';
+let ttItems = SEED_TIKTOK.slice();
+let nwItems = [];
+let bnPos = 'bottom', bnCol = 'gold';
+
+const fmtT = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const fmtN = n => n>=1e6 ? (n/1e6).toFixed(1)+'M' : n>=1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+
+function retime(s){
+  const nb = s.beats.length, span = Math.max(s.length - 10, nb*3), seg = span/nb;
+  s.beats.forEach((b,i) => b.t = `${fmtT(3+seg*i)}–${fmtT(3+seg*(i+1))}`);
+  s.cliff_t = `${fmtT(Math.max(s.length-7,0))}–${fmtT(s.length)}`;
+  const m = s.hud.match(/РИСК:\s*(\d+)%/);
+  s.risk = m ? Number(m[1]) : 55;
+  s.theme_icon = THEMES[s.theme].icon; s.theme_name = THEMES[s.theme].name;
+  s.char_name = CHARS[s.char].name;
+  s.style_icon = STYLES[s.style].icon; s.style_name = STYLES[s.style].name;
+  s.voice_name = VOICES[s.voice].name;
+  return s;
+}
+
+function localBuildStory(opt){
+  const th = opt.theme !== 'random' && THEMES[opt.theme] ? opt.theme : pick(Object.keys(THEMES));
+  const ch = opt.char !== 'random' && CHARS[opt.char] ? opt.char : pick(Object.keys(CHARS));
+  const len = LENGTHS.includes(opt.length) ? opt.length : 60;
+  const pr = pick(PREMISES[th]);
+  const hName = CHARS[ch].name;
+  let beats = pr[3].map(x => x.replaceAll('{h}', hName));
+  const need = NB[len];
+  while (beats.length < need) beats.push(pick(GEN_BEATS).replaceAll('{h}', hName));
+  beats = beats.slice(0, need).map(text => ({t:'', text}));
+  return retime({
+    theme: th, char: ch, length: len, style: opt.style, voice: opt.voice, ep: 1,
+    title: pr[0], hook: pr[1], hud: pr[2], beats, cliff: pr[4].replaceAll('{h}', hName),
+    cta: 'Подпишись — продолжение уже завтра.', changes: []
+  });
+}
+
+function localEnhance(rawText, src='idea', forceTheme=null){
+  const idea = rawText.replace(/https?:\/\/\S+/g,'').replace(/#\S+/g,'').trim().slice(0,150);
+  if (!idea) return localBuildStory(sel);
+  const low = idea.toLowerCase();
+  let th = forceTheme || 'what_if';
+  if (!forceTheme){
+    if (/лифт|этаж|двер|аномал|подъезд/.test(low)) th='anomalies';
+    else if (/интернет|сеть|vpn|ии|алгоритм|связ/.test(low)) th='internet';
+    else if (/холод|свет|блэкаут|вод|выжив/.test(low)) th='survival';
+    else if (/камер|слеж|эфир/.test(low)) th='cameras';
+    else if (/деньг|банк|карт|цен/.test(low)) th='money';
+    else if (/правил|смен/.test(low)) th='rules';
+  }
+  const ch = sel.char !== 'random' ? sel.char : pick(Object.keys(CHARS));
+  const hName = CHARS[ch].name;
+  const mins = pick([7,12,15,20]);
+  const risk = pick([64,72,78,84]);
+  const title = low.startsWith('что если') ? `${idea} — и у тебя ${mins} минут` : `Что если ${idea[0].toLowerCase()+idea.slice(1)} — за ${mins} минут?`;
+  const first = src==='tiktok' ? `${hName} видит тренд, над которым все смеялись: «${idea}». Но это происходит по-настоящему.`
+              : src==='news'   ? `${hName} открывает ленту новостей: «${idea}». За окном сразу меняется свет.`
+              : `${hName} понимает, что это правда: ${idea}. Остальные всё ещё не верят.`;
+  const beats = [
+    first,
+    `На экране появляется обратный отсчёт 0:${mins} и правило, о котором не предупреждали.`,
+    `Попытка позвать помощь удваивает шкалу риска: связь работает в одну сторону.`,
+    `${hName} находит лазейку, но цена выше, чем казалось.`,
+    `Второй таймер запускается раньше, чем кончился первый.`
+  ].slice(0, NB[sel.length]).map(text => ({t:'', text}));
+  return retime({
+    theme: th, char: ch, length: sel.length, style: sel.style, voice: sel.voice, ep: 1,
+    title, hook: `Все думали, что это байка: «${idea}». Пока в 02:40 на экране не запустился таймер.`,
+    hud: `ВРЕМЯ: 0:${String(mins).padStart(2,'0')} | ШАНС: 18% | СИГНАЛ: СЛАБ | РИСК: ${risk}%`,
+    beats, cliff: `Экран мигает красным: «Осталось 30 секунд. Не смотри в окно, ${hName}».`,
+    cta: 'Подпишись — продолжение завтра.',
+    changes: ['Новое название и авторский хук', 'Адаптирован герой и 2D кодовая структура', 'Добавлен HUD и удвоение ставок', 'Финал оставлен на Серию 2']
+  });
+}
+
+function localEdit(s, act){
+  const n = JSON.parse(JSON.stringify(s)), h = n.char_name;
+  if (act==='darker'){
+    const r = Math.min(99, (n.risk||55)+15);
+    n.hud = n.hud.replace(/РИСК:\s*\d+%/, `РИСК: ${r}%`);
+    if (n.beats[1]) n.beats[1].text += ' Свет гаснет, слышно только дыхание.';
+  } else if (act==='hook'){
+    n.hook = pick([`Никто не заметил, как в 02:40 всё изменилось. Кроме меня.`,`Правило №1: не смотри на экран. Я посмотрел.`,`У меня всего 7 минут, чтобы это записать.`]);
+  } else if (act==='twist'){
+    n.beats.push({t:'', text: pick([`Тот, кто помогал ${h}, сам запустил этот таймер.`,`Таймер идёт вверх, а не вниз — отсчёт уже закончился.`])});
+  } else if (act==='hero'){
+    const nk = pick(Object.keys(CHARS).filter(k=>k!==n.char)), nn = CHARS[nk].name;
+    n.beats.forEach(b=>b.text=b.text.replaceAll(h, nn));
+    n.cliff = n.cliff.replaceAll(h, nn);
+    n.char = nk;
+  } else if (act==='shorter' || act==='longer'){
+    let idx = LENGTHS.indexOf(n.length);
+    idx = act==='shorter' ? Math.max(0,idx-1) : Math.min(LENGTHS.length-1,idx+1);
+    n.length = LENGTHS[idx];
+    while(n.beats.length < NB[n.length]) n.beats.push({t:'', text: pick(GEN_BEATS).replaceAll('{h}',h)});
+    n.beats = n.beats.slice(0, NB[n.length]);
+  }
+  return retime(n);
+}
+
+function localEp2(s){
+  const n = JSON.parse(JSON.stringify(s)), h = n.char_name;
+  n.ep = (n.ep||1) + 1;
+  n.title = `Серия ${n.ep}: ${s.title.replace(/^Серия \d+:\s*/,'')}`;
+  n.hook = `Прошлая серия оборвалась на этом: «${s.cliff}». Но за дверью было ещё хуже.`;
+  const r = Math.min(99, (n.risk||60)+12);
+  n.hud = `СЕРИЯ: ${n.ep} | ` + n.hud.replace(/^СЕРИЯ:\s*\d+\s*\|\s*/,'').replace(/РИСК:\s*\d+%/, `РИСК: ${r}%`);
+  n.beats = [
+    `${h} открывает глаза там же, но на часах +2 часа.`,
+    `Ставки удваиваются: теперь в кадре виден второй наблюдатель.`,
+    `${h} находит запись прошлой серии с кадрами, которых он не снимал.`,
+    `Механика HUD меняется: шкала риска больше не падает.`
+  ].slice(0, NB[n.length]).map(text => ({t:'', text}));
+  n.cliff = `Таймер доходит до 0:00, но вместо конца раздаётся стук изнутри стены.`;
+  return retime(n);
+}
+
+function localPrompt(s, kind){
+  const st = STYLES[s.style], ch = CHARS[s.char], vo = VOICES[s.voice];
+  const sc = [['Хук',s.hook,'0:00–0:03'], ...s.beats.map((b,i)=>[`Сцена ${i+1}`,b.text,b.t]), ['Финал',s.cliff,s.cliff_t]];
+  if (kind==='video'){
+    return [`ПРОМПТЫ ДЛЯ НЕЙРОСЕТИ · стиль «${st.name}»`, `Вставляйте по сценам в Kling / Veo / Higgsfield / Sora (9:16).`, '',
+      ...sc.map((x,i)=>`[${x[0]} · ${x[2]}]\n${st.en}. Vertical 9:16. Character: ${ch.en}. Camera: ${CAMS[i%CAMS.length]}. Lighting: ${LIGHT_EN[s.theme]}. Action: ${x[1]} No subtitles, no watermark.\n`),
+      `NEGATIVE: distorted hands, extra fingers, text artifacts, watermark, blurry`].join('\n');
+  }
+  if (kind==='code'){
+    return [`ПРОМПТ ДЛЯ КОДОВОЙ АНИМАЦИИ (HTML + CSS + GSAP)`, '',
+      `Сделай вертикальный ролик 1080×1920, ${s.length}с, 24 fps, GSAP-таймлайн. Стиль: ${st.name} (${st.en}).`,
+      `Герой: ${ch.name} (${ch.desc}). Рисуй векторным SVG без внешних картинок.`,
+      `Верхний HUD (#141F31, скругление 24px): ${s.hud}. Риск растёт до ${s.risk}%.`, '', 'Раскадровка:',
+      ...sc.map(x=>`• ${x[2]} — ${x[0]}: ${x[1]}`)].join('\n');
+  }
+  if (kind==='voice'){
+    return `ОЗВУЧКА · «${vo.name}»\n\nНАСТРОЙКА TTS:\n${vo.en}.\n\nТЕКСТ:\n${[s.hook, ...s.beats.map(b=>b.text), s.cliff, s.cta].join('\n')}`;
+  }
+  return `ОБЛОЖКА 9:16 · «${st.name}»\n\n${st.en}. Vertical 9:16 thumbnail. ${ch.en}, shocked look, ${LIGHT_EN[s.theme]}. Top HUD risk meter ${s.risk}%. Bold Russian headline: «${s.title.slice(0,40)}». High contrast, no watermark.`;
+}
+
+/* ==== СВЯЗЬ С RENDER (фоновая, не блокирует интерфейс!) ==== */
+async function tryApi(path, body, ms=12000){
+  const ctl = new AbortController(), t = setTimeout(()=>ctl.abort(), ms);
+  try{
+    const r = await fetch(API+path, body ? {method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(body), signal:ctl.signal} : {signal:ctl.signal});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    $('netStat').className = 'status ok';
+    $('netTxt').textContent = 'Облако 24/7';
+    return j;
+  } finally { clearTimeout(t); }
+}
+
+/* ==== UI: ДЛИНА И КАРТОЧКИ ВЫБОРА ==== */
+function renderLabels(){
+  $('val-theme').textContent = sel.theme==='random' ? '🎲 Случайно' : `${THEMES[sel.theme].icon} ${THEMES[sel.theme].name}`;
+  $('val-char').textContent  = sel.char==='random'  ? '🎲 Случайно' : CHARS[sel.char].name;
+  $('val-style').textContent = `${STYLES[sel.style].icon} ${STYLES[sel.style].name}`;
+  $('val-voice').textContent = `${VOICES[sel.voice].icon} ${VOICES[sel.voice].name}`;
+}
+function initLenSeg(){
+  const box = $('lenSeg'); box.innerHTML = '';
+  LENGTHS.forEach(L => {
+    const b = document.createElement('button');
+    b.textContent = L + 'с';
+    if (sel.length === L) b.className = 'on';
+    b.onclick = () => { hap(); sel.length = L; box.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b)); };
+    box.appendChild(b);
+  });
+}
+
+function openPicker(kind){
+  hap();
+  const titles = {theme:'Тема мультфильма', char:'Главный герой', style:'Стиль визуала и нейросети', voice:'Голос озвучки'};
+  $('pickerTitle').textContent = titles[kind];
+  const grid = $('pickerGrid'); grid.innerHTML = '';
+  let opts = [];
+  if (kind==='theme') opts = [{id:'random', t:'🎲 Случайно', d:'Любая тема ниши'}, ...Object.entries(THEMES).map(([k,v])=>({id:k, t:`${v.icon} ${v.name}`, d:v.desc}))];
+  if (kind==='char')  opts = [{id:'random', t:'🎲 Случайно', d:'Подберётся сам'}, ...Object.entries(CHARS).map(([k,v])=>({id:k, t:v.name, d:v.desc}))];
+  if (kind==='style') opts = Object.entries(STYLES).map(([k,v])=>({id:k, t:`${v.icon} ${v.name}`, d:v.desc}));
+  if (kind==='voice') opts = Object.entries(VOICES).map(([k,v])=>({id:k, t:`${v.icon} ${v.name}`, d:v.desc}));
+
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt' + (sel[kind]===o.id ? ' on' : '');
+    b.innerHTML = `<div class="opt-t">${esc(o.t)}</div><div class="opt-d">${esc(o.d)}</div>`;
+    b.onclick = () => {
+      hap(); sel[kind] = o.id; renderLabels();
+      if (story && (kind==='style' || kind==='voice')) {
+        story[kind] = o.id; retime(story); renderStory(story);
       }
-    }
-
-    function showToast(text) {
-      const t = document.getElementById('toast');
-      t.innerText = text;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2000);
-    }
-
-    // Переключение вкладок
-    function switchTab(tabName) {
-      haptic();
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-      document.getElementById('tab-' + tabName).classList.add('active');
-      event.currentTarget.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // Настройка чипсов (кнопок выбора)
-    document.querySelectorAll('.chips-group').forEach(group => {
-      group.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          haptic();
-          group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
-        });
-      });
-    });
-
-    // Интерактивный генератор сюжетов
-    const sampleStories = {
-      what_if: {
-        title: "Что если в городе исчезнут деньги на 24 часа?",
-        hook: "В 14:00 терминалы перестали выдавать наличку. В 14:15 карты превратились в куски пластика.",
-        hud: "ВРЕМЯ: 14:15 | БАЛАНС: 0 ₽ | НАЛИЧКА: 1 500 ₽ | РИСК: 45%",
-        steps: [
-          "1. Банкоматы мигают красным отказом, на улице собирается толпа.",
-          "2. Герой бежит в круглосуточный киоск, где еще принимают монеты.",
-          "3. Автоматические двери магазинов блокируются электронной защитой.",
-          "4. На старом городском таксофоне раздается звонок лично герою."
-        ],
-        cliffhanger: "Голос в трубке говорит: 'У тебя есть ровно 15 минут, пока не отключили свет в метро'."
-      },
-      cameras: {
-        title: "ГородОко: Что если на городской камере ты увидел себя?",
-        hook: "Я листал городские камеры перед сном. На камере 2817 стоял человек в моей одежде.",
-        hud: "КАМЕРА: 2817 | СТАТУС: В ЭФИРЕ | ЗРИТЕЛИ: 1 (ТЫ) | РИСК: 60%",
-        steps: [
-          "1. Прямой эфир с задержкой 0 секунд показывает перекрёсток у дома.",
-          "2. Двойник на экране поворачивается и смотрит прямо в объектив.",
-          "3. Герой подходит к окну — фигура на экране делает точно такой же шаг.",
-          "4. На телефон приходит уведомление от приложения: 'Вы обнаружены'."
-        ],
-        cliffhanger: "Двойник на экране достаёт телефон, и в твоей реальной комнате раздаётся звонок."
-      },
-      survival: {
-        title: "Температура падает на 1°C каждые 5 минут",
-        hook: "В 18:00 было +2°C. В 19:00 уже -10°C. В батареях замерзла вода.",
-        hud: "ТЕМПЕРАТУРА: -22°C | ВРЕМЯ: 3 ЧАСА | ТЕПЛО: 28% | РИСК: 80%",
-        steps: [
-          "1. Герой строит изолированное укрытие в центре комнаты из матрасов.",
-          "2. На пластиковых окнах появляются морозные трещины от перепада температур.",
-          "3. Мобильная связь гаснет, в трубах подъезда слышен треск замерзающей воды.",
-          "4. Попытка сохранить тепло свечами при контроле кислорода."
-        ],
-        cliffhanger: "Градусник показывает -70°C, а в дверь квартиры начинает кто-то яростно стучать."
-      },
-      anomalies: {
-        title: "Лифт поехал на этаж -5: Правила выживания",
-        hook: "В обычной 9-этажке дисплей лифта показал минус один... минус два...",
-        hud: "ЭТАЖ: -4 | СВЯЗЬ: НЕТ | СВЕТ: 15% | ДВЕРИ: ЗАБЛОКИРОВАНЫ",
-        steps: [
-          "1. Кабина застревает в сыром тоннеле, свет начинает мерцать желтым.",
-          "2. Створки приоткрываются на 10 см, за ними виден заброшенный кирпичный коридор.",
-          "3. Правило: не выходить, пока горит аварийная кнопка диспетчера.",
-          "4. Снаружи раздаются тяжелые шаги по бетонному полу."
-        ],
-        cliffhanger: "Шаги останавливаются прямо у дверей, и кто-то снаружи нажимает кнопку вызова."
-      }
+      closePicker();
     };
+    grid.appendChild(b);
+  });
+  $('pickerBg').classList.add('on');
+}
+function closePicker(){ $('pickerBg').classList.remove('on'); }
 
-    let currentStory = null;
+/* ==== РЕНДЕР СЦЕНАРИЯ С 9:16 МОНИТОРОМ ==== */
+function genStory(){
+  hap();
+  story = localBuildStory(sel);
+  renderStory(story);
+  toast('Сценарий готов');
+}
 
-    function generateStory() {
-      haptic();
-      const activeTheme = document.querySelector('#theme-chips .chip.active').dataset.val;
-      const data = sampleStories[activeTheme] || sampleStories.what_if;
-      currentStory = data;
+function renderStory(s){
+  const stClass = ['anime','noir','neon','cctv','code2d'].includes(s.style) ? 'st-'+s.style : 'st-code2d';
+  $('storyMount').innerHTML = `
+    <div class="panel" id="storyPanel">
+      <div class="stage-top">
+        <div class="phone ${stClass}">
+          <div>
+            <div class="ph-hud">${esc(s.hud)}</div>
+            <div class="ph-bar"><b style="width:${s.risk}%"></b></div>
+          </div>
+          <div class="ph-center">«${esc(s.hook)}»</div>
+          <div class="ph-time"><span>0:00</span><span>${fmtT(s.length)}</span></div>
+        </div>
+        <div class="st-head">
+          <div>
+            <div class="st-title">${esc(s.title)}</div>
+            <div class="tags">
+              <span class="tag gold">${s.theme_icon} ${esc(s.theme_name)}</span>
+              <span class="tag">${esc(s.char_name)}</span>
+              <span class="tag">${s.length} сек</span>
+              <span class="tag cyan">${s.style_icon} ${esc(s.style_name)}</span>
+              ${s.ep>1 ? `<span class="tag red">Серия ${s.ep}</span>` : ''}
+            </div>
+          </div>
+          <button class="btn btn-gold btn-sm" style="margin-top:10px" onclick="openPrompts()">Промпты для ИИ (${esc(s.style_name)})</button>
+        </div>
+      </div>
 
-      document.getElementById('res-title').innerText = data.title;
-      document.getElementById('res-hook').innerText = `«${data.hook}»`;
-      document.getElementById('res-hud').innerText = data.hud;
-      document.getElementById('res-steps').innerHTML = data.steps.join('<br>');
-      document.getElementById('res-cliffhanger').innerText = `Клиффхэнгер: ${data.cliffhanger}`;
+      <span class="lbl">Хук первых 3 секунд</span>
+      <div class="hook-box">${esc(s.hook)}</div>
 
-      document.getElementById('story-result-card').style.display = 'block';
-      document.getElementById('story-result-card').scrollIntoView({ behavior: 'smooth' });
-      showToast('✓ Сюжет сгенерирован!');
+      <span class="lbl">HUD-панель сверху кадра</span>
+      <div class="hud-strip">${esc(s.hud)}<div class="risk-track"><b style="width:${s.risk}%"></b></div></div>
+
+      <span class="lbl">Раскадровка по секундам</span>
+      <div class="beats">
+        ${s.beats.map(b => `<div class="beat-it"><span class="beat-t">${b.t}</span>${esc(b.text)}</div>`).join('')}
+      </div>
+
+      <span class="lbl">Клиффхэнгер · ${s.cliff_t}</span>
+      <div class="cliff-box">${esc(s.cliff)}</div>
+
+      ${s.changes && s.changes.length ? `<span class="lbl">Антиплагиат-изменения</span><div class="pdesc" style="margin-bottom:0">• ${s.changes.map(esc).join('<br>• ')}</div>` : ''}
+
+      <span class="lbl">Быстрые правки</span>
+      <div class="mods">
+        <button class="mod" onclick="modStory('darker')">Страшнее</button>
+        <button class="mod" onclick="modStory('hook')">Другой хук</button>
+        <button class="mod" onclick="modStory('twist')">Поворот</button>
+        <button class="mod" onclick="modStory('hero')">Другой герой</button>
+        <button class="mod" onclick="modStory('shorter')">Короче</button>
+        <button class="mod" onclick="modStory('longer')">Длиннее</button>
+      </div>
+
+      <div class="grid2">
+        <button class="btn btn-soft btn-sm" onclick="makeEp2()">Серия ${(s.ep||1)+1}</button>
+        <button class="btn btn-soft btn-sm" onclick="genStory()">Ещё вариант</button>
+      </div>
+      <div class="grid2">
+        <button class="btn btn-soft btn-sm" onclick="copyStory()">Скопировать</button>
+        <button class="btn btn-soft btn-sm" onclick="sendStoryChat()">В чат с ботом</button>
+      </div>
+    </div>`;
+  $('storyPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function modStory(act){ hap(); story = localEdit(story, act); renderStory(story); toast('Обновлено'); }
+function makeEp2(){ hap(); story = localEp2(story); renderStory(story); toast('Серия ' + story.ep + ' готова'); }
+
+/* ==== ПРОМПТЫ (ИСПРАВЛЕНО И РАСШИРЕНО) ==== */
+function openPrompts(){
+  hap();
+  if (!story) return;
+  const bar = $('pStyleBar'); bar.innerHTML = '';
+  Object.entries(STYLES).forEach(([k,v]) => {
+    const b = document.createElement('button');
+    b.className = 'pill-btn' + (story.style===k ? ' on' : '');
+    b.textContent = `${v.icon} ${v.name}`;
+    b.onclick = () => {
+      hap(); story.style = k; sel.style = k; renderLabels(); retime(story); renderStory(story);
+      bar.querySelectorAll('.pill-btn').forEach(x=>x.classList.toggle('on', x===b));
+      $('pText').textContent = localPrompt(story, pKind);
+    };
+    bar.appendChild(b);
+  });
+  $('pText').textContent = localPrompt(story, pKind);
+  $('promptBg').classList.add('on');
+}
+function closePrompts(){ $('promptBg').classList.remove('on'); }
+document.querySelectorAll('#pKindBar .pill-btn').forEach(b => b.onclick = () => {
+  hap();
+  document.querySelectorAll('#pKindBar .pill-btn').forEach(x=>x.classList.toggle('on', x===b));
+  pKind = b.dataset.k;
+  if (story) $('pText').textContent = localPrompt(story, pKind);
+});
+
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); }
+  catch(e){ const a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); }
+  hap(); toast('Скопировано в буфер');
+}
+function copyStory(){
+  if (!story) return;
+  copyText(`🎬 ${story.title}\nХук: ${story.hook}\nHUD: ${story.hud}\n\n${story.beats.map(b=>b.t+' '+b.text).join('\n')}\n\nФинал: ${story.cliff}`);
+}
+async function sendStoryChat(){
+  if (!story) return;
+  hap();
+  try {
+    const r = await tryApi('/api/send', {story, initData: tg ? tg.initData : ''}, 8000);
+    if (r.ok) { toast('Отправлено в чат'); return; }
+  } catch(e){}
+  await copyStory();
+  toast('Скопировано (отправьте в чат)');
+}
+async function sendPromptChat(){
+  if (!story) return;
+  hap();
+  try {
+    const r = await tryApi('/api/send', {story, kind: pKind, initData: tg ? tg.initData : ''}, 8000);
+    if (r.ok) { toast('Промпт отправлен в чат'); return; }
+  } catch(e){}
+  await copyText($('pText').textContent);
+}
+
+/* ==== TIKTOK РАДАР ==== */
+function renderTikTok(items, isLive){
+  $('ttMode').textContent = isLive ? 'Свежие из TikTok' : 'База ниши (офлайн)';
+  const box = $('ttList');
+  if (!items || !items.length){
+    box.innerHTML = '<div class="panel"><div class="pdesc" style="margin:0">Пока пусто. Нажмите «Обновить из TikTok сейчас».</div></div>';
+    return;
+  }
+  const maxR = Math.max(...items.map(x=>x.ratio||1), 10);
+  box.innerHTML = items.map((x,i) => `
+    <div class="feed-card">
+      <div class="fc-top">
+        <span class="fc-author">@${esc(x.author)}</span>
+        <span class="x-badge">${x.ratio}x виральность</span>
+      </div>
+      <div class="fc-meta">
+        <span>Просмотры: <b>${fmtN(x.views)}</b></span>
+        <span>Подписчики: <b>${fmtN(x.followers)}</b></span>
+        ${x.date ? `<span>${esc(x.date)}</span>` : ''}
+      </div>
+      <div class="meter"><b style="width:${Math.min(100, Math.round((x.ratio/maxR)*100))}%"></b></div>
+      <div class="fc-desc">${esc(x.desc)}</div>
+      <div class="grid2" style="margin-top:0">
+        <button class="btn btn-gold btn-sm" onclick="adaptTikTok(${i})">Сделать мультик</button>
+        <button class="btn btn-soft btn-sm" onclick="openExt('${esc(x.url)}')">Открыть TikTok</button>
+      </div>
+    </div>`).join('');
+}
+async function loadTikTok(force){
+  const btn = $('ttRefreshBtn');
+  if (force) btn.innerHTML = '<span class="spin"></span> Сканирую TikTok…';
+  try {
+    const r = await tryApi('/api/tiktok' + (force ? '?refresh=1' : ''), null, 28000);
+    if (r.items && r.items.length) { ttItems = r.items; renderTikTok(ttItems, true); toast('TikTok обновлён'); }
+    else renderTikTok(ttItems, false);
+  } catch(e){
+    renderTikTok(ttItems, false);
+    if (force) toast('Сервер недоступен без VPN · показан кэш', true);
+  } finally { btn.textContent = 'Обновить из TikTok сейчас'; }
+}
+function adaptTikTok(i){
+  const x = ttItems[i]; if (!x) return;
+  hap();
+  story = localEnhance(x.desc, 'tiktok', x.theme);
+  goTab('create');
+  renderStory(story);
+  toast('Адаптировано без плагиата');
+}
+
+/* ==== НОВОСТИ ==== */
+async function loadNews(force){
+  const btn = $('nwRefreshBtn'), box = $('nwList');
+  if (force) btn.innerHTML = '<span class="spin"></span> Загружаю…';
+  if (!nwItems.length) box.innerHTML = '<div class="panel"><div class="pdesc" style="margin:0"><span class="spin"></span> Загружаю громкие новости…</div></div>';
+  try {
+    const r = await tryApi('/api/news' + (force ? '?refresh=1' : ''), null, 25000);
+    nwItems = r.items || [];
+    if (!nwItems.length) { box.innerHTML = '<div class="panel"><div class="pdesc" style="margin:0">Сегодня громких ЧП не найдено.</div></div>'; }
+    else {
+      box.innerHTML = nwItems.map((n,i) => `
+        <div class="feed-card">
+          <div class="fc-top">
+            <span class="fc-author">${esc(n.source || 'СМИ')}</span>
+            <span class="tag">${n.age_h < 1 ? 'только что' : Math.floor(n.age_h)+' ч назад'}</span>
+          </div>
+          <div class="fc-desc">${esc(n.title)}</div>
+          <div class="tags" style="margin-bottom:10px">
+            ${n.sources_count>1 ? `<span class="tag cyan">${n.sources_count} источников</span>`:''}
+            ${n.rumor ? '<span class="tag gold">Слух / прогноз</span>' : ''}
+            ${n.sensitive ? '<span class="tag red">Тяжёлая тема</span>' : ''}
+          </div>
+          <div class="grid2" style="margin-top:0">
+            ${n.sensitive ? '<div></div>' : `<button class="btn btn-gold btn-sm" onclick="adaptNews(${i})">В сценарий</button>`}
+            <button class="btn btn-soft btn-sm" onclick="openExt('${esc(n.link)}')">Источник</button>
+          </div>
+        </div>`).join('');
     }
+  } catch(e){
+    box.innerHTML = '<div class="panel"><div class="pdesc" style="margin:0">Сводка новостей грузится с сервера Render. В РФ может потребоваться VPN, либо читайте утреннюю сводку в самом чате бота в 08:00.</div></div>';
+  } finally { btn.textContent = 'Обновить сводку'; }
+}
+function adaptNews(i){
+  const n = nwItems[i]; if (!n) return;
+  hap();
+  story = localEnhance(n.title, 'news');
+  goTab('create');
+  renderStory(story);
+}
 
-    function generateEpisode2() {
-      haptic();
-      if (!currentStory) return;
-      document.getElementById('res-title').innerText = `Серия 2: ${currentStory.title} (Час Расплаты)`;
-      document.getElementById('res-hook').innerText = `«Стук в дверь прекратился. Но в глазок я увидел, что на площадке стоит включённая камера...»`;
-      document.getElementById('res-hud').innerText = `ВРЕМЯ: 03:15 | ЗАРЯД: 9% | ДВЕРЬ: ПОД НАБЛЮДЕНИЕМ | РИСК: 92%`;
-      document.getElementById('res-steps').innerHTML = `
-        1. Герой понимает, что подъезд транслируется в закрытый стрим.<br>
-        2. Три шага контр-выживания: обесточить щиток, заклеить глазок, подать сигнал.<br>
-        3. Сообщение на телефон: 400 зрителей голосуют, выломать ли дверь.<br>
-        4. Шкала голосования доходит до 100%.
-      `;
-      document.getElementById('res-cliffhanger').innerText = `Клиффхэнгер: Снаружи раздаётся скрежет монтировки, замок начинает проворачиваться.`;
-      showToast('✓ Серия 2 создана!');
-    }
+/* ==== УЛУЧШАТОР И БАННЕР ==== */
+function runEnhance(){
+  const txt = $('ideaInput').value.trim();
+  if (!txt) { toast('Напишите идею', true); return; }
+  hap();
+  story = localEnhance(txt, 'idea');
+  goTab('create');
+  renderStory(story);
+  toast('Идея усилена');
+}
 
-    function generateCodePrompts() {
-      haptic();
-      alert(`🎨 КОДОВЫЕ ПРОМПТЫ ДЛЯ АНИМАЦИИ (GSAP/HTML5):\n\n1. Сцена 1 (00:00-00:06): Ночной фон #0B1422, силуэт со спины, экран #EDBF74.\n2. Сцена 2 (00:06-00:25): Плашка HUD закругление 24px, плавная анимация шкалы риска.\n3. Сцена 3 (00:25-00:50): Полный переход на #000000, белая векторная иконка действия по центру.\n4. Финал: Зум камеры scale(1.15) и красная рамка опасности.`);
-    }
+function drawBanner(){
+  const bar = $('bnPrev');
+  bar.textContent = $('bnText').value.trim() || 'ВАШ БАННЕР';
+  bar.className = 'bn-bar' + (bnCol==='red' ? ' c-red' : bnCol==='min' ? ' c-min' : '');
+  bar.style.top = bar.style.bottom = 'auto';
+  if (bnPos==='top') bar.style.top = '13%';
+  else if (bnPos==='center') bar.style.top = '44%';
+  else bar.style.bottom = '21%';
+}
+document.querySelectorAll('#bnPosSeg button').forEach(b => b.onclick = () => {
+  hap(); document.querySelectorAll('#bnPosSeg button').forEach(x=>x.classList.toggle('on', x===b));
+  bnPos = b.dataset.v; drawBanner();
+});
+document.querySelectorAll('#bnColSeg button').forEach(b => b.onclick = () => {
+  hap(); document.querySelectorAll('#bnColSeg button').forEach(x=>x.classList.toggle('on', x===b));
+  bnCol = b.dataset.v; drawBanner();
+});
 
-    function sendDataToTelegram() {
-      haptic();
-      if (tg && currentStory) {
-        tg.sendData(JSON.stringify(currentStory));
-      } else {
-        copyResult();
-      }
-    }
+function openExt(u){ if (tg && tg.openLink) tg.openLink(u); else window.open(u,'_blank'); }
+function openBot(arg){ const u=`https://t.me/${BOT}?start=${arg}`; if(tg&&tg.openTelegramLink) tg.openTelegramLink(u); else window.open(u,'_blank'); }
+async function sendBannerCfg(){
+  hap();
+  try { await tryApi('/api/banner', {text:$('bnText').value, pos:bnPos, initData: tg ? tg.initData : ''}, 4000); } catch(e){}
+  openBot('banner');
+}
 
-    function copyResult() {
-      haptic();
-      showToast('📋 Скопировано в буфер!');
-    }
+/* ==== НАВИГАЦИЯ И СТАРТ ==== */
+function goTab(name){
+  hap();
+  document.querySelectorAll('.di').forEach(d => d.classList.toggle('on', d.dataset.tab === name));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + name));
+  window.scrollTo({top: 0});
+  if (name === 'tiktok') loadTikTok(false);
+  if (name === 'news' && !nwItems.length) loadNews(false);
+}
 
-    // Улучшатор
-    function enhanceIdeaAction() {
-      haptic();
-      const txt = document.getElementById('enhance-input').value.trim();
-      if (!txt) {
-        alert('Пожалуйста, введите тему или идею!');
-        return;
-      }
-
-      document.getElementById('enh-title').innerText = `Что если ${txt.toLowerCase()} ночью, когда отключены все выходы?`;
-      document.getElementById('enh-hook').innerText = `«Все думали, что это просто слухи. Пока в 02:40 на экране не запустился обратный отсчет...»`;
-      document.getElementById('enh-stakes').innerText = `Каждое решение отнимает ресурс. Любая попытка позвать на помощь удваивает шкалу риска на экране.`;
-      document.getElementById('enh-hud').innerText = `ВРЕМЯ: 02:40 | ШАНС: 14% | ШУМ В ДОМЕ: 42 дБ | РИСК: 85%`;
-      document.getElementById('enh-cliff').innerText = `Экран телефона гаснет, и из темноты коридора раздаётся механический голос.`;
-
-      document.getElementById('enhance-result-card').style.display = 'block';
-      document.getElementById('enhance-result-card').scrollIntoView({ behavior: 'smooth' });
-      showToast('🔥 Идея усилена!');
-    }
-
-    function loadOutlierToStudio(id) {
-      haptic();
-      switchTab('stories');
-      const themeMap = { 1: 'what_if', 2: 'anomalies', 3: 'cameras' };
-      const themeVal = themeMap[id] || 'what_if';
-      
-      document.querySelectorAll('#theme-chips .chip').forEach(c => {
-        c.classList.toggle('active', c.dataset.val === themeVal);
-      });
-      generateStory();
-    }
-
-    function applyBannerHint() {
-      haptic();
-      alert(`🏷️ Как наложить баннер через бота:\n\n1. Закройте мини-приложение.\n2. Отправьте видеоролик прямо в диалог с ботом.\n3. В подписи к видео напишите желаемый текст баннера (например: "ПОДПИСЫВАЙСЯ").\n\nБот обработает файл через FFmpeg и пришлет готовое видео!`);
-    }
-
-    // Обновление превью баннера
-    document.getElementById('banner-text')?.addEventListener('input', (e) => {
-      document.getElementById('preview-banner').innerText = e.target.value || 'ВАШ БАННЕР';
-    });
-  </script>
+renderLabels();
+initLenSeg();
+drawBanner();
+renderTikTok(ttItems, false);
+tryApi('/api/health', null, 8000).catch(() => { $('netTxt').textContent = 'Автономно'; });
+</script>
 </body>
 </html>
